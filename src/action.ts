@@ -4,7 +4,7 @@ import Data from "@wxn0brp/db-core/types/data";
 import FileCpu from "@wxn0brp/db-core/types/fileCpu";
 import { DbOpts } from "@wxn0brp/db-core/types/options";
 import { VQuery } from "@wxn0brp/db-core/types/query";
-import { compareSafe } from "@wxn0brp/db-core/utils/sort";
+import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { existsSync, mkdirSync, promises, statSync } from "fs";
 import { resolve, sep } from "path";
 
@@ -96,67 +96,16 @@ class dbActionC extends dbActionBase {
     /**
      * Find entries in the specified database based on search criteria.
      */
-    async find({ collection, search, context = {}, dbFindOpts = {}, findOpts = {} }: VQuery) {
-        const {
-            reverse = false,
-            max = -1,
-            offset = 0,
-            sortBy,
-            sortAsc = true
-        } = dbFindOpts;
+    async find(query: VQuery) {
+        await this.checkCollection(query);
 
-        await this.checkCollection(arguments[0]);
-        const cpath = this._getCollectionPath(collection);
+        const cpath = this._getCollectionPath(query.collection);
         let files = await getSortedFiles(cpath);
-        if (reverse && !sortBy) files.reverse();
+        if (files.length == 0) return [];
 
-        let datas: Data[] = [];
-        let totalEntries = 0;
-        let skippedEntries = 0;
-
-        for (const f of files) {
-            let entries = await this.fileCpu.find(cpath + f, search, context, findOpts) as Data[];
-            if (reverse && !sortBy) entries.reverse();
-
-            if (!sortBy) {
-                if (offset > skippedEntries) {
-                    const remainingSkip = offset - skippedEntries;
-                    if (entries.length <= remainingSkip) {
-                        skippedEntries += entries.length;
-                        continue;
-                    }
-                    entries = entries.slice(remainingSkip);
-                    skippedEntries = offset;
-                }
-
-                if (max !== -1) {
-                    if (totalEntries + entries.length > max) {
-                        const remaining = max - totalEntries;
-                        entries = entries.slice(0, remaining);
-                        totalEntries = max;
-                    } else {
-                        totalEntries += entries.length;
-                    }
-                }
-
-                datas.push(...entries);
-
-                if (max !== -1 && totalEntries >= max) break;
-            } else {
-                datas.push(...entries);
-            }
-        }
-
-        if (sortBy) {
-            const dir = sortAsc ? 1 : -1;
-            datas.sort((a, b) => compareSafe(a[sortBy], b[sortBy]) * dir);
-
-            const start = offset;
-            const end = max !== -1 ? offset + max : undefined;
-            datas = datas.slice(start, end);
-        }
-
-        return datas;
+        files = files.map(file => cpath + file);
+        const data = await findUtil(query, this.fileCpu, files);
+        return data || [];
     }
 
     /**
