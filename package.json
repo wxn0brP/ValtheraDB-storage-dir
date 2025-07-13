@@ -1,15 +1,15 @@
 {
-    "name": "@wxn0brp/db-plugin-dir",
+    "name": "@wxn0brp/db-storage-dir",
     "version": "0.0.1",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "author": "wxn0brP",
     "license": "MIT",
     "type": "module",
-    "description": "ValtheraDB Dir Plugin",
+    "description": "ValtheraDB Dir Storage",
     "repository": {
         "type": "git",
-        "url": "https://github.com/wxn0brP/ValtheraDB-plugin-dir.git"
+        "url": "https://github.com/wxn0brP/ValtheraDB-storage-dir.git"
     },
     "homepage": "https://github.com/wxn0brP/ValtheraDB",
     "scripts": {
