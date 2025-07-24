@@ -60,7 +60,7 @@ class dbActionC extends dbActionBase {
     /**
      * Check and create the specified collection if it doesn't exist.
      */
-    async checkCollection({ collection }: VQuery) {
+    async ensureCollection({ collection }: VQuery) {
         if (await this.issetCollection(collection)) return;
         const cpath = this._getCollectionPath(collection);
         await promises.mkdir(cpath, { recursive: true });
@@ -84,7 +84,7 @@ class dbActionC extends dbActionBase {
      * Add a new entry to the specified database.
      */
     async add({ collection, data, id_gen = true }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         const cpath = this._getCollectionPath(collection);
         const file = cpath + await getLastFile(cpath, this.options.maxFileSize);
 
@@ -97,7 +97,7 @@ class dbActionC extends dbActionBase {
      * Find entries in the specified database based on search criteria.
      */
     async find(query: VQuery) {
-        await this.checkCollection(query);
+        await this.ensureCollection(query);
 
         const cpath = this._getCollectionPath(query.collection);
         let files = await getSortedFiles(cpath);
@@ -112,7 +112,7 @@ class dbActionC extends dbActionBase {
      * Find the first matching entry in the specified database based on search criteria.
      */
     async findOne({ collection, search, context = {}, findOpts = {} }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         const cpath = this._getCollectionPath(collection);
         const files = await getSortedFiles(cpath);
 
@@ -127,7 +127,7 @@ class dbActionC extends dbActionBase {
      * Update entries in the specified database based on search criteria and an updater function or object.
      */
     async update({ collection, search, updater, context = {} }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         return await operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
@@ -142,7 +142,7 @@ class dbActionC extends dbActionBase {
      * Update the first matching entry in the specified database based on search criteria and an updater function or object.
      */
     async updateOne({ collection, search, updater, context = {} }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         return await operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
@@ -157,7 +157,7 @@ class dbActionC extends dbActionBase {
      * Remove entries from the specified database based on search criteria.
      */
     async remove({ collection, search, context = {} }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         return await operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
@@ -171,7 +171,7 @@ class dbActionC extends dbActionBase {
      * Remove the first matching entry from the specified database based on search criteria.
      */
     async removeOne({ collection, search, context = {} }: VQuery) {
-        await this.checkCollection(arguments[0]);
+        await this.ensureCollection(arguments[0]);
         return await operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
