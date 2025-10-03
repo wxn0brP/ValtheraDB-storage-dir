@@ -16,13 +16,16 @@
         "build": "tsc && tsc-alias"
     },
     "dependencies": {
-        "@wxn0brp/db-core": ">=0.2.0",
         "json5": "^2.2.3"
     },
+    "peerDependencies": {
+        "@wxn0brp/db-core": ">=0.2.3"
+    },
     "devDependencies": {
-        "@types/node": "^24.1.0",
-        "tsc-alias": "^1.8.10",
-        "typescript": "^5.7.3"
+        "@types/bun": "*",
+        "@wxn0brp/db-core": "^0.2.3",
+        "tsc-alias": "*",
+        "typescript": "*"
     },
     "files": [
         "dist"

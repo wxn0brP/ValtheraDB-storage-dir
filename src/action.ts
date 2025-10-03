@@ -12,25 +12,23 @@ import { resolve, sep } from "path";
  * A class representing database actions on files.
  * @class
  */
-class dbActionC extends dbActionBase {
+export class FileActions extends dbActionBase {
     folder: string;
     options: DbOpts;
-    fileCpu: FileCpu;
 
     /**
-     * Creates a new instance of dbActionC.
+     * Creates a new instance of FileActions.
      * @constructor
      * @param folder - The folder where database files are stored.
      * @param options - The options object.
      */
-    constructor(folder: string, options: DbOpts, fileCpu: FileCpu) {
+    constructor(folder: string, options: DbOpts, public fileCpu: FileCpu) {
         super();
         this.folder = folder;
         this.options = {
             maxFileSize: 2 * 1024 * 1024, //2 MB
             ...options,
         };
-        this.fileCpu = fileCpu;
 
         if (!existsSync(folder)) mkdirSync(folder, { recursive: true });
     }
@@ -62,8 +60,8 @@ class dbActionC extends dbActionBase {
      */
     async ensureCollection({ collection }: VQuery) {
         if (await this.issetCollection(collection)) return;
-        const cpath = this._getCollectionPath(collection);
-        await promises.mkdir(cpath, { recursive: true });
+        const c_path = this._getCollectionPath(collection);
+        await promises.mkdir(c_path, { recursive: true });
         return true;
     }
 
@@ -85,8 +83,8 @@ class dbActionC extends dbActionBase {
      */
     async add({ collection, data, id_gen = true }: VQuery) {
         await this.ensureCollection(arguments[0]);
-        const cpath = this._getCollectionPath(collection);
-        const file = cpath + await getLastFile(cpath, this.options.maxFileSize);
+        const c_path = this._getCollectionPath(collection);
+        const file = c_path + await getLastFile(c_path, this.options.maxFileSize);
 
         if (id_gen) data._id = data._id || gen();
         await this.fileCpu.add(file, data);
@@ -99,11 +97,11 @@ class dbActionC extends dbActionBase {
     async find(query: VQuery) {
         await this.ensureCollection(query);
 
-        const cpath = this._getCollectionPath(query.collection);
-        let files = await getSortedFiles(cpath);
+        const c_path = this._getCollectionPath(query.collection);
+        let files = await getSortedFiles(c_path);
         if (files.length == 0) return [];
 
-        files = files.map(file => cpath + file);
+        files = files.map(file => c_path + file);
         const data = await findUtil(query, this.fileCpu, files);
         return data || [];
     }
@@ -113,11 +111,11 @@ class dbActionC extends dbActionBase {
      */
     async findOne({ collection, search, context = {}, findOpts = {} }: VQuery) {
         await this.ensureCollection(arguments[0]);
-        const cpath = this._getCollectionPath(collection);
-        const files = await getSortedFiles(cpath);
+        const c_path = this._getCollectionPath(collection);
+        const files = await getSortedFiles(c_path);
 
         for (let f of files) {
-            let data = await this.fileCpu.findOne(cpath + f, search, context, findOpts) as Data;
+            let data = await this.fileCpu.findOne(c_path + f, search, context, findOpts) as Data;
             if (data) return data;
         }
         return null;
@@ -230,20 +228,20 @@ async function getSortedFiles(folder: string): Promise<string[]> {
 }
 
 async function operationUpdater(
-    cpath: string,
+    c_path: string,
     worker: (file: string, one: boolean, ...args: any[]) => Promise<boolean>,
     one: boolean,
     ...args: any[]
 ) {
-    const files = await getSortedFiles(cpath);
+    const files = await getSortedFiles(c_path);
 
     let update = false;
     for (const file of files) {
-        const updated = await worker(cpath + file, one, ...args);
+        const updated = await worker(c_path + file, one, ...args);
         update = update || updated;
         if (one && updated) break;
     }
     return update;
 }
 
-export default dbActionC;
+export default FileActions;
