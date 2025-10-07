@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.1.2...v0.1.3) (2025-10-07)
+
+
+### Bug Fixes
+
+* trim lines ([676aa4c](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/676aa4caf275858cbd4ef499e338e2dd59139edb))
+
 ### [0.1.2](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.1.1...v0.1.2) (2025-10-03)
 
 
