@@ -23,12 +23,16 @@ async function updateWorker(file: string, one: boolean, search: Search, updater:
 
     let updated = false;
     for await (let line of rl) {
+        if (!line) continue;
+        const trimmed = line.trim();
+
         if (one && updated) {
-            await promises.appendFile(file, line + "\n");
+            await promises.appendFile(file, trimmed + "\n");
             continue;
         }
 
-        const data = parseData(line);
+        if (!trimmed) continue;
+        const data = parseData(trimmed);
         let ob = false;
 
         if (typeof search === "function") {

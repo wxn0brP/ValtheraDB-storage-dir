@@ -22,12 +22,16 @@ async function removeWorker(file: string, one: boolean, search: Search, context:
 
     let removed = false;
     for await (let line of rl) {
+        if (!line) continue;
+        const trimmed = line.trim();
+
         if (one && removed) {
-            appendFileSync(file, line + "\n");
+            appendFileSync(file, trimmed + "\n");
             continue;
         }
+        if (!trimmed) continue;
 
-        const data = parseData(line);
+        const data = parseData(trimmed);
 
         if (typeof search === "function") {
             if (search(data, context)) {
