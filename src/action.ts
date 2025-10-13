@@ -1,4 +1,5 @@
 import dbActionBase from "@wxn0brp/db-core/base/actions";
+import { addId } from "@wxn0brp/db-core/helpers/addId";
 import gen from "@wxn0brp/db-core/helpers/gen";
 import Data from "@wxn0brp/db-core/types/data";
 import FileCpu from "@wxn0brp/db-core/types/fileCpu";
@@ -81,12 +82,12 @@ export class FileActions extends dbActionBase {
     /**
      * Add a new entry to the specified database.
      */
-    async add({ collection, data, id_gen = true }: VQuery) {
+    async add({ collection, data }: VQuery) {
         await this.ensureCollection(arguments[0]);
         const c_path = this._getCollectionPath(collection);
         const file = c_path + await getLastFile(c_path, this.options.maxFileSize);
 
-        if (id_gen) data._id = data._id || gen();
+        await addId(arguments[0], this);
         await this.fileCpu.add(file, data);
         return data;
     }
