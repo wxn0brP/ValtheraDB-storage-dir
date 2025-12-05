@@ -48,7 +48,7 @@ jobs:
         run: |
           if [ "${{ matrix.runtime }}" = "node" ]; then
             bun build benchmark/find.ts --outfile benchmark/find.js --target=node
-            node dist/benchmark/find.js
+            node benchmark/find.js
           else
             bun run benchmark/find.ts
           fi
