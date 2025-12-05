@@ -48,8 +48,9 @@ jobs:
       - name: Run benchmark
         run: |
           if [ "${{ matrix.runtime }}" = "node" ]; then
-            npx tsup benchmark/find.ts --format esm
-            node benchmark/find.js
+            npm i -g tsup
+            tsup benchmark/find.ts --format esm
+            node dist/benchmark/find.js
           else
             bun run benchmark/find.ts
           fi
