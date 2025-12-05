@@ -102,9 +102,7 @@ jobs:
             git reset --hard
           fi
 
-          # Copy new results to the benchmark branch
-          cp -r benchmarks/* . 2>/dev/null || echo "No new benchmark results to copy"
-          git add .
+          git add benchmarks
           git status
           if git diff --staged --quiet; then
             echo "No changes to commit"
