@@ -62,11 +62,7 @@ const searchQueries = [
     {
         description: "Find last entry (id: 1,999,999)",
         search: { id: 1_999_999 },
-    },
-    {
-        description: "Find non-existent entry",
-        search: { id: NUM_ENTRIES },
-    },
+    }
 ];
 
 const results = [];
@@ -82,7 +78,7 @@ for (const query of searchQueries) {
         "Test Case": query.description,
         "Duration (ms)": duration.toFixed(2),
         "Duration (s)": (duration / 1000).toFixed(2),
-        "Result Found": result && result.length > 0 ? "Yes" : "No",
+        "Result Found": result ? "Yes" : "No",
     });
 }
 
