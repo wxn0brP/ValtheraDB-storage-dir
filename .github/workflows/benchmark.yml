@@ -1,0 +1,124 @@
+name: Benchmark
+
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+concurrency:
+  group: benchmark-master
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        runtime: [node, bun]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        if: matrix.runtime == 'node'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup Bun
+        if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.runtime }}" = "node" ]; then
+            npm install
+          else
+            bun install
+          fi
+
+      - name: Run benchmark
+        run: |
+          if [ "${{ matrix.runtime }}" = "node" ]; then
+            node benchmark/find.ts
+          else
+            bun run benchmark/find.ts
+          fi
+
+      - name: Save benchmark results
+        run: |
+          if [ "${{ matrix.runtime }}" = "node" ]; then
+            echo "Running benchmark with Node.js..."
+            node benchmark/find.ts
+          else
+            echo "Running benchmark with Bun..."
+            bun run benchmark/find.ts
+          fi
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.runtime }}
+          path: benchmark_results_${{ matrix.runtime }}.json
+
+  push-benchmark-results:
+    needs: benchmark
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          path: ./temp_benchmarks
+
+      - name: Move benchmark results to root
+        run: |
+          mkdir -p benchmarks
+          for file in temp_benchmarks/*/*; do
+            cp "$file" benchmarks/
+          done
+          ls -la benchmarks/
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Create or switch to benchmark branch
+        run: |
+          git fetch origin benchmark 2>/dev/null || echo "Branch does not exist yet"
+
+          # Check if benchmark branch exists
+          if git show-ref --verify --quiet refs/heads/benchmark; then
+            # Branch exists, just checkout
+            git checkout benchmark
+          else
+            # Branch doesn't exist, create orphan branch
+            git checkout --orphan benchmark
+            git reset --hard
+          fi
+
+          # Copy new results to the benchmark branch
+          cp -r benchmarks/* . 2>/dev/null || echo "No new benchmark results to copy"
+          git add .
+          git status
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add/update benchmark results [skip ci]"
+            git push -u origin benchmark --force
+          fi
