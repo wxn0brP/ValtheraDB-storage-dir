@@ -32,7 +32,6 @@ jobs:
           node-version: "24"
 
       - name: Setup Bun
-        if: matrix.runtime == 'bun'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -48,9 +47,7 @@ jobs:
       - name: Run benchmark
         run: |
           if [ "${{ matrix.runtime }}" = "node" ]; then
-            npm i -g typescript
-            npm i -g tsup
-            tsup benchmark/find.ts --format esm
+            bun build benchmark/find.ts --outfile benchmark/find.js --target=node
             node dist/benchmark/find.js
           else
             bun run benchmark/find.ts
