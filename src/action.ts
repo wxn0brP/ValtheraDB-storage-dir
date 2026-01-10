@@ -1,6 +1,5 @@
 import dbActionBase from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
-import gen from "@wxn0brp/db-core/helpers/gen";
 import Data from "@wxn0brp/db-core/types/data";
 import FileCpu from "@wxn0brp/db-core/types/fileCpu";
 import { DbOpts } from "@wxn0brp/db-core/types/options";
