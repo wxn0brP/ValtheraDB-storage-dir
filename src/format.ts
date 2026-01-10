@@ -6,5 +6,5 @@ export function parseData(data: string) {
 }
 
 export function stringifyData(data: any) {
-    return json5.stringify(data);
+    return json5.stringify(data).slice(1, -1);
 }
