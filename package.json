@@ -12,6 +12,11 @@
         "url": "https://github.com/wxn0brP/ValtheraDB-storage-dir.git"
     },
     "homepage": "https://github.com/wxn0brP/ValtheraDB",
+    "keywords": [
+        "valthera",
+        "valtheradb",
+        "vdb-adapter"
+    ],
     "scripts": {
         "build": "tsc && tsc-alias"
     },
