@@ -93,12 +93,14 @@ export class FileActions extends dbActionBase {
     /**
      * Add a new entry to the specified database.
      */
-    async add({ collection, data }: VQuery) {
-        await this.ensureCollection(arguments[0]);
-        const c_path = this._getCollectionPath(collection);
-        const file = c_path + await this.utils.getLastFile(c_path, this.options.maxFileSize);
+    async add(query: VQuery) {
+        const { collection, data } = query;
 
-        await addId(arguments[0], this);
+        await this.ensureCollection(query);
+        const c_path = this._getCollectionPath(collection);
+        const file = c_path + await this.utils.getLastFile(c_path, this.options.maxFileSize, query);
+
+        await addId(query, this);
         await this.fileCpu.add(file, data);
         return data;
     }
@@ -110,7 +112,7 @@ export class FileActions extends dbActionBase {
         await this.ensureCollection(query);
 
         const c_path = this._getCollectionPath(query.collection);
-        let files = await this.utils.getSortedFiles(c_path);
+        let files = await this.utils.getSortedFiles(c_path, query);
         if (files.length == 0) return [];
 
         files = files.map(file => c_path + file);
@@ -121,10 +123,12 @@ export class FileActions extends dbActionBase {
     /**
      * Find the first matching entry in the specified database based on search criteria.
      */
-    async findOne({ collection, search, context = {}, findOpts = {} }: VQuery) {
-        await this.ensureCollection(arguments[0]);
+    async findOne(query: VQuery) {
+        const { collection, search, context = {}, findOpts = {} } = query;
+
+        await this.ensureCollection(query);
         const c_path = this._getCollectionPath(collection);
-        const files = await this.utils.getSortedFiles(c_path);
+        const files = await this.utils.getSortedFiles(c_path, query);
 
         for (let f of files) {
             let data = await this.fileCpu.findOne(c_path + f, search, context, findOpts) as Data;
@@ -136,12 +140,16 @@ export class FileActions extends dbActionBase {
     /**
      * Update entries in the specified database based on search criteria and an updater function or object.
      */
-    async update({ collection, search, updater, context = {} }: VQuery) {
-        await this.ensureCollection(arguments[0]);
+    async update(query: VQuery) {
+        const { collection, search, updater, context = {} } = query;
+
+        await this.ensureCollection(query);
+
         return await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
             false,
+            query,
             search,
             updater,
             context
@@ -151,12 +159,16 @@ export class FileActions extends dbActionBase {
     /**
      * Update the first matching entry in the specified database based on search criteria and an updater function or object.
      */
-    async updateOne({ collection, search, updater, context = {} }: VQuery) {
-        await this.ensureCollection(arguments[0]);
+    async updateOne(query: VQuery) {
+        const { collection, search, updater, context = {} } = query;
+
+        await this.ensureCollection(query);
+
         return await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
             true,
+            query,
             search,
             updater,
             context
@@ -166,12 +178,16 @@ export class FileActions extends dbActionBase {
     /**
      * Remove entries from the specified database based on search criteria.
      */
-    async remove({ collection, search, context = {} }: VQuery) {
-        await this.ensureCollection(arguments[0]);
+    async remove(query: VQuery) {
+        const { collection, search, context = {} } = query;
+
+        await this.ensureCollection(query);
+
         return await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
             false,
+            query,
             search,
             context
         )
@@ -180,12 +196,16 @@ export class FileActions extends dbActionBase {
     /**
      * Remove the first matching entry from the specified database based on search criteria.
      */
-    async removeOne({ collection, search, context = {} }: VQuery) {
-        await this.ensureCollection(arguments[0]);
+    async removeOne(query: VQuery) {
+        const { collection, search, context = {} } = query;
+
+        await this.ensureCollection(query);
+
         return await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
             true,
+            query,
             search,
             context
         );
@@ -194,7 +214,7 @@ export class FileActions extends dbActionBase {
     /**
      * Removes a database collection from the file system.
      */
-    async removeCollection({ collection }) {
+    async removeCollection({ collection }: VQuery) {
         await promises.rm(this.folder + "/" + collection, { recursive: true, force: true });
         return true;
     }
