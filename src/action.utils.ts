@@ -22,8 +22,9 @@ export class FileActionsUtils {
 
         const num = parseInt(last.replace(".db", ""), 10) + 1;
         await writeFile(path + "/" + num + ".db", "");
-        query.context ||= {};
-        query.context._dir_lastFileNum = num;
+        query.control ||= {} as any;
+        query.control.dir ||= {};
+        query.context.dir.lastFileNum = num;
         return num + ".db";
     }
 
@@ -43,8 +44,9 @@ export class FileActionsUtils {
                 return numA - numB;
             });
 
-        query.context ||= {};
-        query.context._dir_sortedFiles = sorted;
+        query.control ||= {} as any;
+        query.control.dir ||= {};
+        query.control.dir.sortedFiles = sorted;
         return sorted;
     }
 
