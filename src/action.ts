@@ -1,7 +1,7 @@
-import dbActionBase from "@wxn0brp/db-core/base/actions";
+import { ActionsBase } from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
-import Data from "@wxn0brp/db-core/types/data";
-import FileCpu from "@wxn0brp/db-core/types/fileCpu";
+import { Data } from "@wxn0brp/db-core/types/data";
+import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
 import { DbOpts } from "@wxn0brp/db-core/types/options";
 import { VQuery } from "@wxn0brp/db-core/types/query";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
@@ -13,7 +13,7 @@ import { FileActionsUtils } from "./action.utils";
  * A class representing database actions on files.
  * @class
  */
-export class FileActions extends dbActionBase {
+export class FileActions extends ActionsBase {
     folder: string;
     options: DbOpts;
     _inited = false;
@@ -219,5 +219,3 @@ export class FileActions extends dbActionBase {
         return true;
     }
 }
-
-export default FileActions;

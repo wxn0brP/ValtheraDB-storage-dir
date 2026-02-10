@@ -57,12 +57,12 @@ export class FileActionsUtils {
     ) {
         const files = await this.getSortedFiles(c_path, query);
 
-        let update = false;
+        let update = [];
         for (const file of files) {
             const updated = await worker(c_path + file, one, ...args);
-            update = update || updated;
+            update.push(updated);
             if (one && updated) break;
         }
-        return update;
+        return update.flat();
     }
 }

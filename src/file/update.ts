@@ -1,32 +1,32 @@
-import { existsSync, promises } from "fs";
-import { createRL } from "./utils";
+import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { Search, Updater } from "@wxn0brp/db-core/types/arg";
 import { VContext } from "@wxn0brp/db-core/types/types";
-import hasFieldsAdvanced from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
-import updateObjectAdvanced from "@wxn0brp/db-core/utils/updateObject";
+import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
+import { updateObjectAdvanced } from "@wxn0brp/db-core/utils/updateObject";
+import { existsSync, promises } from "fs";
 import { parseData, stringifyData } from "../format";
-import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
+import { createRL } from "./utils";
 
 /**
  * Updates a file based on search criteria and an updater function or object.
  */
-async function updateWorker(file: string, one: boolean, search: Search, updater: Updater, context: VContext = {}) {
+export async function update(file: string, one: boolean, search: Search, updater: Updater, context: VContext = {}) {
     file = pathRepair(file);
     if (!existsSync(file)) {
         await promises.writeFile(file, "");
-        return false;
+        return [];
     }
     await promises.copyFile(file, file + ".tmp");
     await promises.writeFile(file, "");
 
     const rl = createRL(file + ".tmp");
 
-    let updated = false;
+    let updated = [];
     for await (let line of rl) {
         if (!line) continue;
         const trimmed = line.trim();
 
-        if (one && updated) {
+        if (one && updated.length) {
             await promises.appendFile(file, trimmed + "\n");
             continue;
         }
@@ -50,7 +50,7 @@ async function updateWorker(file: string, one: boolean, search: Search, updater:
                 updateObj = updateObjectAdvanced(data, updater);
             }
             line = await stringifyData(updateObj);
-            updated = true;
+            updated.push(updateObj);
         }
 
         await promises.appendFile(file, line + "\n");
@@ -58,5 +58,3 @@ async function updateWorker(file: string, one: boolean, search: Search, updater:
     await promises.writeFile(file + ".tmp", "");
     return updated;
 }
-
-export default updateWorker;
