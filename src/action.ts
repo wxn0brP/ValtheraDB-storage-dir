@@ -2,12 +2,12 @@ import { ActionsBase } from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
-import { DbOpts } from "@wxn0brp/db-core/types/options";
 import { VQuery } from "@wxn0brp/db-core/types/query";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
+import { DbDirOpts } from "./types";
 
 /**
  * A class representing database actions on files.
@@ -15,7 +15,7 @@ import { FileActionsUtils } from "./action.utils";
  */
 export class FileActions extends ActionsBase {
     folder: string;
-    options: DbOpts;
+    options: DbDirOpts;
     _inited = false;
 
     /**
@@ -28,7 +28,7 @@ export class FileActions extends ActionsBase {
      */
     constructor(
         folder: string,
-        options: DbOpts,
+        options: DbDirOpts,
         public fileCpu: FileCpu,
         public utils = new FileActionsUtils(),
     ) {
@@ -164,7 +164,7 @@ export class FileActions extends ActionsBase {
 
         await this.ensureCollection(query);
 
-        return await this.utils.operationUpdater(
+        const res = await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
             true,
@@ -172,7 +172,9 @@ export class FileActions extends ActionsBase {
             search,
             updater,
             context
-        )
+        );
+
+        return res[0];
     }
 
     /**
@@ -201,7 +203,7 @@ export class FileActions extends ActionsBase {
 
         await this.ensureCollection(query);
 
-        return await this.utils.operationUpdater(
+        const res = await this.utils.operationUpdater(
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
             true,
@@ -209,6 +211,8 @@ export class FileActions extends ActionsBase {
             search,
             context
         );
+
+        return res[0];
     }
 
     /**
