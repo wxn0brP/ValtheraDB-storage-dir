@@ -2,7 +2,7 @@ import { DbOpts } from "@wxn0brp/db-core/types/options";
 
 declare module "@wxn0brp/db-core/types/query" {
     export interface VQuery_Control {
-        dir: {
+        dir?: {
             lastFileNum?: number;
             sortedFiles?: string[];
         }
