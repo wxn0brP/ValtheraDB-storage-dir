@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.3](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.2...v0.2.3) (2026-02-16)
+
+
+### Bug Fixes
+
+* VQuery_Control ([27a2cf1](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/27a2cf17fbf745fdb2939e28302d0988a62eba68))
+
 ### [0.2.2](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.1...v0.2.2) (2026-02-14)
 
 ### [0.2.1](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.0...v0.2.1) (2026-02-14)
