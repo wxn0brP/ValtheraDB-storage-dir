@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-02-17T10:59:02.339Z",
+  "runtime": "node",
+  "results": [
+    {
+      "Test Case": "Find first entry (id: 0)",
+      "Duration (ms)": "3.74",
+      "Duration (s)": "0.00",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find (id: 100,000)",
+      "Duration (ms)": "1330.42",
+      "Duration (s)": "1.33",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find middle entry (id: 1,000,000)",
+      "Duration (ms)": "12738.68",
+      "Duration (s)": "12.74",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find last entry (id: 1,999,999)",
+      "Duration (ms)": "24966.78",
+      "Duration (s)": "24.97",
+      "Result Found": "Yes"
+    }
+  ]
+}
