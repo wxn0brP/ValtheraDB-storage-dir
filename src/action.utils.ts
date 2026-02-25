@@ -1,5 +1,6 @@
 import { VQuery } from "@wxn0brp/db-core/types/query";
-import { exists, mkdir, readdir, stat, writeFile } from "fs/promises";
+import { mkdir, readdir, stat, writeFile } from "fs/promises";
+import { exists } from "./utils";
 
 export class FileActionsUtils {
     /**

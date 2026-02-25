@@ -8,6 +8,7 @@ import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
 import { DbDirOpts } from "./types";
+import { exists } from "./utils";
 
 /**
  * A class representing database actions on files.
@@ -41,7 +42,7 @@ export class FileActions extends ActionsBase {
     }
 
     async init() {
-        if (!await promises.exists(this.folder))
+        if (!await exists(this.folder))
             await promises.mkdir(this.folder, { recursive: true });
     }
 
