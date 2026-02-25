@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.5](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.4...v0.2.5) (2026-02-25)
+
+
+### Features
+
+* improve benchmark matrix ([99d7d95](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/99d7d95e390a227a4d962ec3d014cce2d04bf641))
+
+
+### Bug Fixes
+
+* benchmark ([5837e9c](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/5837e9cfdee16e331f1381dffbe759ee71fcef7f))
+* runtime exists error ([c2ecab2](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/c2ecab2d790462a0925392f2bbc3bdf1d75b606f))
+
 ### [0.2.4](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.3...v0.2.4) (2026-02-17)
 
 ### [0.2.3](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.2...v0.2.3) (2026-02-16)
