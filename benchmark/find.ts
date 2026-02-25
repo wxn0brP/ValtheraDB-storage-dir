@@ -95,7 +95,8 @@ const benchmarkResults = {
     arch: process.arch,
     results: results
 };
-const resultsFileName = `benchmark_results_${benchmarkResults.runtime || "node"}.json`;
+const runtimeSuffix = isBun ? "bun" : `node_${process.version.match(/v(\d+)/)?.[1] || "node"}`;
+const resultsFileName = `benchmark_results_${runtimeSuffix}.json`;
 writeFileSync(resultsFileName, JSON.stringify(benchmarkResults, null, 2));
 
 console.log(`\nBenchmark results saved to ${resultsFileName}`);
