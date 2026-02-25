@@ -18,6 +18,14 @@ jobs:
     strategy:
       matrix:
         runtime: [node, bun]
+        node-version: [20, 22, 24]
+        exclude:
+          - runtime: bun
+            node-version: 20
+          - runtime: bun
+            node-version: 22
+          - runtime: bun
+            node-version: 24
 
     steps:
       - name: Checkout code
@@ -29,7 +37,7 @@ jobs:
         if: matrix.runtime == 'node'
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: ${{ matrix.node-version }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

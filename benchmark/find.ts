@@ -86,9 +86,13 @@ console.log("\n--- Benchmark Results ---");
 console.table(results);
 
 // Save results to file
+const isBun = typeof process.versions?.bun !== "undefined";
 const benchmarkResults = {
     timestamp: new Date().toISOString(),
-    runtime: process.env.npm_config_user_agent?.includes("bun") ? "bun" : "node",
+    runtime: isBun ? "bun" : "node",
+    nodeVersion: process.version,
+    platform: process.platform,
+    arch: process.arch,
     results: results
 };
 const resultsFileName = `benchmark_results_${benchmarkResults.runtime || "node"}.json`;
