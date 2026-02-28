@@ -1,9 +1,8 @@
-import { DbOpts } from "@wxn0brp/db-core/types/options";
-import { vFileCpu } from "./file";
 import { FileActions } from "./action";
+import { vFileCpu } from "./file";
 import { DbDirOpts } from "./types";
-export * from "./file";
 export * from "./action";
+export * from "./file";
 
 export function createFileActions(folder: string, options: DbDirOpts = {}) {
     return new FileActions(folder, options, vFileCpu);
