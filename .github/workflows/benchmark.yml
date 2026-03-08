@@ -32,7 +32,8 @@ jobs:
       - name: Build and run benchmark
         run: |
           bun build benchmark/find.ts --outfile benchmark/find.js --target=node
-          bun run benchmark/find.ts
+          bun run benchmark/find.ts ts
+          bun run benchmark/find.js js
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
