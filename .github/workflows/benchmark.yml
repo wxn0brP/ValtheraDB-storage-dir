@@ -38,8 +38,14 @@ jobs:
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-bun
-          path: benchmark_results_bun.json
+          name: benchmark-results-bun_ts
+          path: benchmark_results_bun_ts.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-bun_js
+          path: benchmark_results_bun_js.json
 
       - name: Upload built benchmark file
         uses: actions/upload-artifact@v4
