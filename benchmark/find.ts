@@ -1,6 +1,7 @@
 import { existsSync, promises as fsPromises, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { findOne } from "../src/file/find";
+import { FindOneQuery } from "@wxn0brp/db-core/types/query";
 
 const BENCHMARK_DIR = "benchmark_temp_large";
 const DATA_FILE = join(BENCHMARK_DIR, "large_data.txt");
@@ -70,7 +71,18 @@ const results = [];
 for (const query of searchQueries) {
     console.log(`\nRunning: ${query.description}`);
     const startTime = performance.now();
-    const result = await findOne(DATA_FILE, { id: query.search.id });
+
+    const queryConfig: FindOneQuery = {
+        collection: "large_data",
+        search: {
+            id: query.search.id
+        },
+        context: {},
+        control: {},
+        findOpts: {},
+    }
+
+    const result = await findOne(DATA_FILE, queryConfig);
     const endTime = performance.now();
     const duration = endTime - startTime;
 
