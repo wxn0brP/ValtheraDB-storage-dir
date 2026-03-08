@@ -53,16 +53,15 @@ export class FileActionsUtils {
 
     async operationUpdater(
         c_path: string,
-        worker: (file: string, one: boolean, ...args: any[]) => Promise<boolean>,
+        worker: (file: string, config: VQuery, one: boolean) => Promise<boolean>,
         one: boolean,
-        query: VQuery,
-        ...args: any[]
+        config: VQuery
     ) {
-        const files = await this.getSortedFiles(c_path, query);
+        const files = await this.getSortedFiles(c_path, config);
 
         let update = [];
         for (const file of files) {
-            const updated = await worker(c_path + file, one, ...args);
+            const updated = await worker(c_path + file, config, one);
             update.push(updated);
             if (one && updated) break;
         }

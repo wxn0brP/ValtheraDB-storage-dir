@@ -1,7 +1,5 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { Search } from "@wxn0brp/db-core/types/arg";
-import { FindOpts } from "@wxn0brp/db-core/types/options";
-import { VContext } from "@wxn0brp/db-core/types/types";
+import { FindOneQuery, FindQuery, VQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { updateFindObject } from "@wxn0brp/db-core/utils/updateFindObject";
 import { existsSync, promises } from "fs";
@@ -11,9 +9,11 @@ import { createRL } from "./utils";
 /**
  * Processes a line of text from a file and checks if it matches the search criteria.
  */
-async function findProcesLine(search: Search, line: string, context: VContext = {}, findOpts: FindOpts = {}) {
+async function findProcesLine(config: VQuery, line: string) {
     const ob = parseData(line);
     let res = false;
+
+    const { search, context, findOpts = {} } = config;
 
     if (typeof search === "function") {
         if (search(ob, context)) res = true;
@@ -28,7 +28,7 @@ async function findProcesLine(search: Search, line: string, context: VContext = 
 /**
  * Asynchronously finds entries in a file based on search criteria.
  */
-export async function find(file: string, search: Search, context: VContext = {}, findOpts: FindOpts = {}): Promise<any[]> {
+export async function find(file: string, config: FindQuery): Promise<any[]> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!existsSync(file)) {
@@ -44,7 +44,7 @@ export async function find(file: string, search: Search, context: VContext = {},
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = await findProcesLine(search, trimmed, context, findOpts);
+            const res = await findProcesLine(config, trimmed);
             if (res) results.push(res);
         };
         resolve(results);
@@ -55,7 +55,7 @@ export async function find(file: string, search: Search, context: VContext = {},
 /**
  * Asynchronously finds one entry in a file based on search criteria.
  */
-export async function findOne(file: string, search: Search, context: VContext = {}, findOpts: FindOpts = {}): Promise<any | false> {
+export async function findOne(file: string, config: FindOneQuery): Promise<any | false> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!existsSync(file)) {
@@ -70,7 +70,7 @@ export async function findOne(file: string, search: Search, context: VContext = 
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = await findProcesLine(search, trimmed, context, findOpts);
+            const res = await findProcesLine(config, trimmed);
             if (res) {
                 resolve(res);
                 rl.close();

@@ -1,6 +1,5 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { Search } from "@wxn0brp/db-core/types/arg";
-import { VContext } from "@wxn0brp/db-core/types/types";
+import { RemoveQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { appendFileSync, existsSync, promises } from "fs";
 import { parseData } from "../format";
@@ -9,7 +8,7 @@ import { createRL } from "./utils";
 /**
  * Removes entries from a file based on search criteria.
  */
-export async function remove(file: string, one: boolean, search: Search, context: VContext = {}) {
+export async function remove(file: string, config: RemoveQuery, one: boolean) {
     file = pathRepair(file);
     if (!existsSync(file)) {
         await promises.writeFile(file, "");
@@ -19,6 +18,7 @@ export async function remove(file: string, one: boolean, search: Search, context
     await promises.writeFile(file, "");
 
     const rl = createRL(file + ".tmp");
+    const { search, context } = config;
 
     let removed = [];
     for await (let line of rl) {

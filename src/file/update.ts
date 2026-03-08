@@ -6,11 +6,12 @@ import { updateObjectAdvanced } from "@wxn0brp/db-core/utils/updateObject";
 import { existsSync, promises } from "fs";
 import { parseData, stringifyData } from "../format";
 import { createRL } from "./utils";
+import { UpdateQuery } from "@wxn0brp/db-core/types/query";
 
 /**
  * Updates a file based on search criteria and an updater function or object.
  */
-export async function update(file: string, one: boolean, search: Search, updater: Updater, context: VContext = {}) {
+export async function update(file: string, config: UpdateQuery, one: boolean) {
     file = pathRepair(file);
     if (!existsSync(file)) {
         await promises.writeFile(file, "");
@@ -20,6 +21,7 @@ export async function update(file: string, one: boolean, search: Search, updater
     await promises.writeFile(file, "");
 
     const rl = createRL(file + ".tmp");
+    const { search, updater, context } = config;
 
     let updated = [];
     for await (let line of rl) {
