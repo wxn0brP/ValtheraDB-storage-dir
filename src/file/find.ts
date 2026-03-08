@@ -1,5 +1,5 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { FindOneQuery, FindQuery, VQuery } from "@wxn0brp/db-core/types/query";
+import { FindOneQuery, FindQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { updateFindObject } from "@wxn0brp/db-core/utils/updateFindObject";
 import { existsSync, promises } from "fs";
@@ -9,7 +9,7 @@ import { createRL } from "./utils";
 /**
  * Processes a line of text from a file and checks if it matches the search criteria.
  */
-async function findProcesLine(config: VQuery, line: string) {
+async function findProcesLine(config: FindQuery | FindOneQuery, line: string) {
     const ob = parseData(line);
     let res = false;
 
