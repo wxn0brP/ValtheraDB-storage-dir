@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0-alpha.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.90.0...v0.10.0-alpha.0) (2026-03-13)
+
+
+### Features
+
+* benchmark bun ts + js ([aaffee2](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/aaffee2c90ec91f66da6dfa55ed2da948cbecb62))
+* update to new core (alpha.1) ([b1c9629](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/b1c962923b5ae57ccc2fbaa5b34005f74fba46f4))
+
+
+### Bug Fixes
+
+* benchmark ([2d03e45](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/2d03e45e5915d440c2645e759699cb56be15c330))
+
 ## [0.90.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.5...v0.90.0) (2026-02-25)
 
 ### [0.2.5](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.2.4...v0.2.5) (2026-02-25)
