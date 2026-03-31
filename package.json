@@ -24,11 +24,11 @@
         "json5": "^2.2.3"
     },
     "peerDependencies": {
-        "@wxn0brp/db-core": "~0.10.0"
+        "@wxn0brp/db-core": "^0.10.2"
     },
     "devDependencies": {
         "@types/bun": "*",
-        "@wxn0brp/db-core": "~0.10.0",
+        "@wxn0brp/db-core": "^0.10.2",
         "tsc-alias": "*",
         "typescript": "*"
     },
