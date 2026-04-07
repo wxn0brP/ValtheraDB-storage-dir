@@ -2,8 +2,7 @@ import { extendJson, format } from "./../src/format";
 import { describe, expect, it } from "bun:test";
 
 describe("format.ts", async () => {
-    const f = format.json5;
-    extendJson(f);
+    const f = extendJson(format.json5);
     await f.init();
     const { parse: parseData, stringify: stringifyData } = f;
 
