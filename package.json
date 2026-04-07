@@ -1,0 +1,51 @@
+{
+  "name": "@wxn0brp/db-storage-dir",
+  "version": "0.101.0-alpha.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "wxn0brP",
+  "license": "MIT",
+  "type": "module",
+  "description": "ValtheraDB Dir Storage",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wxn0brP/ValtheraDB-storage-dir.git"
+  },
+  "homepage": "https://github.com/wxn0brP/ValtheraDB",
+  "keywords": [
+    "valthera",
+    "valtheradb",
+    "vdb-adapter"
+  ],
+  "peerDependencies": {
+    "@wxn0brp/db-core": "^0.10.2",
+    "json5": ""
+  },
+  "peerDependenciesMeta": {
+    "json5": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/bun": "*",
+    "@wxn0brp/db-core": "^0.10.2",
+    "json5": "^2.2.3",
+    "tsc-alias": "^1",
+    "typescript": "^6"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    }
+  }
+}
