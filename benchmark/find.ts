@@ -1,7 +1,9 @@
+import { FindOneQuery } from "@wxn0brp/db-core/types/query";
 import { existsSync, promises as fsPromises, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { findOne } from "../src/file/find";
-import { FindOneQuery } from "@wxn0brp/db-core/types/query";
+import { extendJson, format } from "../src/format";
+import { Format } from "../src/types";
 
 const BENCHMARK_DIR = "benchmark_temp_large";
 const DATA_FILE = join(BENCHMARK_DIR, "large_data.txt");
@@ -66,33 +68,44 @@ const searchQueries = [
     }
 ];
 
-const results = [];
+const results: any[] = [];
 
-for (const query of searchQueries) {
-    console.log(`\nRunning: ${query.description}`);
-    const startTime = performance.now();
+async function runBenchmark(format: Format, formatName: string) {
+    for (const query of searchQueries) {
+        console.log(`\nRunning: ${query.description}`);
+        const startTime = performance.now();
 
-    const queryConfig: FindOneQuery = {
-        collection: "large_data",
-        search: {
-            id: query.search.id
-        },
-        context: {},
-        control: {},
-        findOpts: {},
+        const queryConfig: FindOneQuery = {
+            collection: "large_data",
+            search: {
+                id: query.search.id
+            },
+            context: {},
+            control: {
+                dir: {
+                    format
+                }
+            },
+            findOpts: {},
+        }
+
+        const result = await findOne(DATA_FILE, queryConfig);
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        results.push({
+            "Test Case": query.description,
+            "Duration (ms)": duration.toFixed(2),
+            "Duration (s)": (duration / 1000).toFixed(2),
+            "Result Found": result ? "Yes" : "No",
+            "Format": formatName
+        });
     }
-
-    const result = await findOne(DATA_FILE, queryConfig);
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-
-    results.push({
-        "Test Case": query.description,
-        "Duration (ms)": duration.toFixed(2),
-        "Duration (s)": (duration / 1000).toFixed(2),
-        "Result Found": result ? "Yes" : "No",
-    });
 }
+
+await runBenchmark(format.json, "json");
+const json5 = extendJson(format.json5);
+await runBenchmark(json5, "json5");
 
 console.log("\n--- Benchmark Results ---");
 console.table(results);
