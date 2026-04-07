@@ -104,6 +104,7 @@ async function runBenchmark(format: Format, formatName: string) {
 }
 
 await runBenchmark(format.json, "json");
+await format.json5?.init?.();
 const json5 = extendJson(format.json5);
 await runBenchmark(json5, "json5");
 
