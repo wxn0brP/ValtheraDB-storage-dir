@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.101.0-alpha.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.100.0...v0.101.0-alpha.0) (2026-04-07)
+
+
+### Features
+
+* pluggable file format system ([a723bb7](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/a723bb7a0ab39aa83d71b6e82771c1d195a2b44a))
+
+
+### Bug Fixes
+
+* extendJson reference ([9cec678](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/9cec678e3583c768ebea01a3698dc128416129ce))
+
 ## [0.100.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.100.0-alpha.0...v0.100.0) (2026-03-20)
 
 ## [0.100.0-alpha.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.90.0...v0.100.0-alpha.0) (2026-03-13)
