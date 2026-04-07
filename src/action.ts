@@ -46,8 +46,11 @@ export class FileActions extends ActionsBase {
         if (typeof this.options.format === "string") {
             const [name, x] = this.options.format.split(":");
             if (format[name]) {
-                this.format = format[name];
-                if (x) extendJson(this.format);
+                if (x)
+                    this.format = extendJson(format[name]);
+                else
+                    this.format = { ...format[name] };
+
             } else {
                 throw new Error(`Unknown format: ${this.options.format}`);
             }

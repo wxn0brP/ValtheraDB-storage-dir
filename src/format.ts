@@ -24,19 +24,18 @@ export const format: Record<string, Format> = {
     },
 }
 
-export function extendJson(format: Format) {
+export function extendJson(format: Format): Format {
     if (format._extended) return;
-    format._extended = true;
 
-    const originalParseData = format.parse.bind(format);
-    const originalStringifyData = format.stringify.bind(format);
-
-    format.parse = (data: string) => {
-        if (data[0] !== "{") return originalParseData(`{${data}}`);
-        return originalParseData(data);
-    }
-
-    format.stringify = (data: any) => {
-        return originalStringifyData(data).slice(1, -1);
+    return {
+        ...format,
+        _extended: true,
+        parse(data: string) {
+            if (data[0] !== "{") return format.parse(`{${data}}`);
+            return format.parse(data);
+        },
+        stringify(data: any) {
+            return format.stringify(data).slice(1, -1);
+        }
     }
 }
