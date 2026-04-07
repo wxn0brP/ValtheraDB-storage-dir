@@ -34,7 +34,7 @@
         "@wxn0brp/db-core": "^0.10.2",
         "json5": "^2.2.3",
         "tsc-alias": "*",
-        "typescript": "*"
+        "typescript": "^6.0.0"
     },
     "files": [
         "dist"
