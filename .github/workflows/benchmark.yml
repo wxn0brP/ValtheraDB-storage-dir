@@ -27,7 +27,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun install && bun install json5
 
       - name: Build and run benchmark
         run: |
@@ -79,7 +79,7 @@ jobs:
           path: benchmark
 
       - name: Install dependencies
-        run: npm install
+        run: npm install && npm install json5
 
       - name: Run benchmark
         run: node benchmark/find.js
