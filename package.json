@@ -20,15 +20,19 @@
     "scripts": {
         "build": "tsc && tsc-alias"
     },
-    "dependencies": {
-        "json5": "^2.2.3"
-    },
     "peerDependencies": {
-        "@wxn0brp/db-core": "^0.10.2"
+        "@wxn0brp/db-core": "^0.10.2",
+        "json5": ""
+    },
+    "peerDependenciesMeta": {
+        "json5": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@types/bun": "*",
         "@wxn0brp/db-core": "^0.10.2",
+        "json5": "^2.2.3",
         "tsc-alias": "*",
         "typescript": "*"
     },

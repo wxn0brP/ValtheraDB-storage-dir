@@ -2,7 +2,6 @@ import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { RemoveQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { appendFileSync, existsSync, promises } from "fs";
-import { parseData } from "../format";
 import { createRL } from "./utils";
 
 /**
@@ -31,7 +30,7 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
         }
         if (!trimmed) continue;
 
-        const data = parseData(trimmed);
+        const data = config.control.dir.format.parse(trimmed);
 
         if (typeof search === "function") {
             if (search(data, context)) {

@@ -1,7 +1,12 @@
+import { extendJson, format } from "./../src/format";
 import { describe, expect, it } from "bun:test";
-import { parseData, stringifyData } from "../src/format";
 
-describe("format.ts", () => {
+describe("format.ts", async () => {
+    const f = format.json5;
+    extendJson(f);
+    await f.init();
+    const { parse: parseData, stringify: stringifyData } = f;
+
     describe("parseData", () => {
         it("1. should parse complete JSON object", () => {
             const data = '{"name":"test","value":123}';

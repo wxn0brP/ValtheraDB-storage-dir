@@ -3,14 +3,13 @@ import { FindOneQuery, FindQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { updateFindObject } from "@wxn0brp/db-core/utils/updateFindObject";
 import { existsSync, promises } from "fs";
-import { parseData } from "../format";
 import { createRL } from "./utils";
 
 /**
  * Processes a line of text from a file and checks if it matches the search criteria.
  */
 async function findProcesLine(config: FindQuery | FindOneQuery, line: string) {
-    const ob = parseData(line);
+    const ob = config.control.dir.format.parse(line);
     let res = false;
 
     const { search, context, findOpts = {} } = config;

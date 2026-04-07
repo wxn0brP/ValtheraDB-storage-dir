@@ -12,6 +12,7 @@ describe("action.ts", () => {
     beforeEach(async () => {
         await mkdir(TEST_DIR, { recursive: true });
         actions = new FileActions(TEST_DIR, { maxFileSize: 2 * 1024 * 1024 }, vFileCpu);
+        await actions.init();
     });
 
     afterEach(async () => {

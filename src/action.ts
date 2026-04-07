@@ -7,8 +7,9 @@ import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
-import { DbDirOpts } from "./types";
+import { DbDirOpts, Format } from "./types";
 import { exists } from "./utils";
+import { extendJson, format } from "./format";
 
 /**
  * A class representing database actions on files.
@@ -18,6 +19,7 @@ export class FileActions extends ActionsBase {
     folder: string;
     options: DbDirOpts;
     _inited = false;
+    format: Format;
 
     /**
      * Creates a new instance of FileActions.
@@ -37,17 +39,35 @@ export class FileActions extends ActionsBase {
         this.folder = folder;
         this.options = {
             maxFileSize: 2 * 1024 * 1024, //2 MB
+            format: "json",
             ...options,
         };
+
+        if (typeof this.options.format === "string") {
+            const [name, x] = this.options.format.split(":");
+            if (format[name]) {
+                this.format = format[name];
+                if (x) extendJson(this.format);
+            } else {
+                throw new Error(`Unknown format: ${this.options.format}`);
+            }
+        }
     }
 
     async init() {
         if (!await exists(this.folder))
             await promises.mkdir(this.folder, { recursive: true });
+        await this.format?.init?.();
     }
 
     _getCollectionPath(collection: string) {
         return this.folder + "/" + collection + "/";
+    }
+
+    _ensureQueryFormat(query: Query.VQuery) {
+        query.control ||= {};
+        query.control.dir ||= {};
+        query.control.dir.format ||= this.format;
     }
 
     /**
@@ -96,6 +116,7 @@ export class FileActions extends ActionsBase {
      */
     async add(query: Query.AddQuery) {
         const { collection, data } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(collection);
         const c_path = this._getCollectionPath(collection);
@@ -111,6 +132,7 @@ export class FileActions extends ActionsBase {
      */
     async find(query: Query.FindQuery) {
         await this.ensureCollection(query.collection);
+        this._ensureQueryFormat(query);
 
         const c_path = this._getCollectionPath(query.collection);
         let files = await this.utils.getSortedFiles(c_path, query);
@@ -126,6 +148,7 @@ export class FileActions extends ActionsBase {
      */
     async findOne(query: Query.FindOneQuery) {
         const { collection } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(collection);
         const c_path = this._getCollectionPath(collection);
@@ -143,6 +166,7 @@ export class FileActions extends ActionsBase {
      */
     async update(query: Query.UpdateQuery) {
         const { collection } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(collection);
 
@@ -159,6 +183,7 @@ export class FileActions extends ActionsBase {
      */
     async updateOne(query: Query.UpdateQuery) {
         const { collection } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(collection);
 
@@ -177,6 +202,7 @@ export class FileActions extends ActionsBase {
      */
     async remove(query: Query.RemoveQuery) {
         const { collection } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(query.collection);
 
@@ -193,6 +219,7 @@ export class FileActions extends ActionsBase {
      */
     async removeOne(query: Query.RemoveQuery) {
         const { collection } = query;
+        this._ensureQueryFormat(query);
 
         await this.ensureCollection(query.collection);
 

@@ -2,9 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { vFileCpu } from "../src/file";
+import { format } from "../src/format";
 
 const TEST_DIR = join(process.cwd(), "test_temp_file_cpu");
 const TEST_FILE = join(TEST_DIR, "test.db");
+
+await format.json5.init();
 
 describe("file CPU operations", () => {
     beforeEach(async () => {
@@ -15,6 +18,14 @@ describe("file CPU operations", () => {
         await rm(TEST_DIR, { recursive: true, force: true });
     });
 
+    function getControl() {
+        return {
+            dir: {
+                format: format.json5,
+            }
+        }
+    }
+
     describe("add", () => {
         it("1. should append data to file", async () => {
             await writeFile(TEST_FILE, "");
@@ -22,7 +33,7 @@ describe("file CPU operations", () => {
             await vFileCpu.add(TEST_FILE, {
                 collection: "test",
                 data: { id: "1", name: "test" },
-                control: {},
+                control: getControl(),
             });
 
             const content = await Bun.file(TEST_FILE).text();
@@ -38,13 +49,13 @@ describe("file CPU operations", () => {
             await vFileCpu.add(TEST_FILE, {
                 collection: "test",
                 data: { id: "1" },
-                control: {},
+                control: getControl(),
             });
 
             await vFileCpu.add(TEST_FILE, {
                 collection: "test",
                 data: { id: "2" },
-                control: {},
+                control: getControl(),
             });
 
             const content = await Bun.file(TEST_FILE).text();
@@ -63,7 +74,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results.length).toBe(3);
@@ -74,7 +85,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results.length).toBe(1);
@@ -86,7 +97,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: (item: any) => item.id === "2",
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results.length).toBe(1);
@@ -98,7 +109,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "nonexistent" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results).toEqual([]);
@@ -110,7 +121,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results).toEqual([]);
@@ -123,7 +134,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results.length).toBe(2);
@@ -140,7 +151,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(result).toBeTruthy();
@@ -152,7 +163,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "nonexistent" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(result).toBe(false);
@@ -166,7 +177,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(result).toBe(false);
@@ -179,7 +190,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect((result as any)?.name).toBe("first");
@@ -197,7 +208,7 @@ describe("file CPU operations", () => {
                 search: {},
                 updater: (item: any) => ({ ...item, updated: true }),
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(updated.length).toBe(3);
@@ -206,7 +217,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
             expect(results.every((item: any) => item.updated === true)).toBe(true);
         });
@@ -217,7 +228,7 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 updater: (item: any) => ({ ...item, value: 999 }),
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(updated.length).toBe(1);
@@ -230,14 +241,14 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 updater: { value: 500 },
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             const result = await vFileCpu.findOne(TEST_FILE, {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect((result as any)?.value).toBe(500);
@@ -249,14 +260,14 @@ describe("file CPU operations", () => {
                 search: {},
                 updater: (item: any) => ({ ...item, updated: true }),
                 context: {},
-                control: {},
+                control: getControl(),
             }, true);
 
             const results = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(results.filter((item: any) => item.updated === true).length).toBe(1);
@@ -268,7 +279,7 @@ describe("file CPU operations", () => {
                 search: { id: "nonexistent" },
                 updater: (item: any) => ({ ...item, value: 999 }),
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(updated).toEqual([]);
@@ -281,7 +292,7 @@ describe("file CPU operations", () => {
                 search: {},
                 updater: (item: any) => item,
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(await Bun.file(nonExistentFile).text()).toBe("");
@@ -298,7 +309,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(removed.length).toBe(3);
@@ -307,7 +318,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
             expect(remaining.length).toBe(0);
         });
@@ -317,7 +328,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(removed.length).toBe(1);
@@ -327,7 +338,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
             expect(remaining.length).toBe(2);
         });
@@ -337,14 +348,14 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             }, true);
 
             const remaining = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
             expect(remaining.length).toBe(2);
         });
@@ -354,7 +365,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "nonexistent" },
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             expect(removed).toEqual([]);
@@ -363,7 +374,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
             expect(remaining.length).toBe(3);
         });
@@ -373,14 +384,14 @@ describe("file CPU operations", () => {
                 collection: "test",
                 search: { id: "2" },
                 context: {},
-                control: {},
+                control: getControl(),
             }, false);
 
             const remaining = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
-                control: {},
+                control: getControl(),
             });
 
             expect(remaining.some((item: any) => item.id === "1")).toBe(true);

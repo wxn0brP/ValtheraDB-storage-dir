@@ -1,12 +1,9 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { Search, Updater } from "@wxn0brp/db-core/types/arg";
-import { VContext } from "@wxn0brp/db-core/types/types";
+import { UpdateQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { updateObjectAdvanced } from "@wxn0brp/db-core/utils/updateObject";
 import { existsSync, promises } from "fs";
-import { parseData, stringifyData } from "../format";
 import { createRL } from "./utils";
-import { UpdateQuery } from "@wxn0brp/db-core/types/query";
 
 /**
  * Updates a file based on search criteria and an updater function or object.
@@ -34,7 +31,7 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
         }
 
         if (!trimmed) continue;
-        const data = parseData(trimmed);
+        const data = config.control.dir.format.parse(trimmed);
         let ob = false;
 
         if (typeof search === "function") {
@@ -51,7 +48,7 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
             } else if (typeof updater === "object" && !Array.isArray(updater)) {
                 updateObj = updateObjectAdvanced(data, updater);
             }
-            line = await stringifyData(updateObj);
+            line = config.control.dir.format.stringify(updateObj);
             updated.push(updateObj);
         }
 
