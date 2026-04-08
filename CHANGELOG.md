@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.101.0-alpha.1](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.101.0-alpha.0...v0.101.0-alpha.1) (2026-04-08)
+
+
+### Features
+
+* support ValtheraDB-resolver ([3a3f210](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/3a3f2101223b660343ea673aaeaf282737c7b3a5))
+
 ## [0.101.0-alpha.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.100.0...v0.101.0-alpha.0) (2026-04-07)
 
 
