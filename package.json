@@ -22,7 +22,7 @@
     },
     "peerDependencies": {
         "@wxn0brp/db-core": "^0.10.2",
-        "json5": ""
+        "json5": "^2.2.3"
     },
     "peerDependenciesMeta": {
         "json5": {
