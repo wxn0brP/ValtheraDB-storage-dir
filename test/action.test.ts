@@ -65,7 +65,7 @@ describe("action.ts", () => {
         it("2. should do nothing if collection already exists", async () => {
             await actions.ensureCollection("test_collection");
             const result = await actions.ensureCollection("test_collection");
-            expect(result).toBeUndefined();
+            expect(result).toBe(false);
         });
     });
 
