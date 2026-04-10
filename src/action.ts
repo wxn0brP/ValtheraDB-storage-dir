@@ -95,7 +95,7 @@ export class FileActions extends ActionsBase {
      * Check and create the specified collection if it doesn't exist.
      */
     async ensureCollection(collection: string) {
-        if (await this.issetCollection(collection)) return;
+        if (await this.issetCollection(collection)) return false;
         const c_path = this._getCollectionPath(collection);
         await promises.mkdir(c_path, { recursive: true });
         return true;
@@ -197,7 +197,7 @@ export class FileActions extends ActionsBase {
             query
         );
 
-        return res[0];
+        return res[0] ?? null;
     }
 
     /**
@@ -233,7 +233,7 @@ export class FileActions extends ActionsBase {
             query
         );
 
-        return res[0];
+        return res[0] ?? null;
     }
 
     /**

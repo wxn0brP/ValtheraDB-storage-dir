@@ -1,6 +1,7 @@
 import { VQuery } from "@wxn0brp/db-core/types/query";
 import { mkdir, readdir, stat, writeFile } from "fs/promises";
 import { exists } from "./utils";
+import { DataInternal } from "@wxn0brp/db-core/types/data";
 
 export class FileActionsUtils {
     /**
@@ -56,7 +57,7 @@ export class FileActionsUtils {
         worker: (file: string, config: VQuery, one: boolean) => Promise<boolean>,
         one: boolean,
         config: VQuery
-    ) {
+    ): Promise<DataInternal[]> {
         const files = await this.getSortedFiles(c_path, config);
 
         let update = [];
