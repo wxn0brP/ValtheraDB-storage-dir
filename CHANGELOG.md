@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.101.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.101.0-alpha.1...v0.101.0) (2026-04-11)
+
+
+### Bug Fixes
+
+* api contract ([f7db035](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/f7db03547c8662e2656393524bfbe1700e4b58b1))
+* peerDependencies ([efe117b](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/efe117bf23db9fafbff0fa590730d1ac63d2be2f))
+
 ## [0.101.0-alpha.1](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.101.0-alpha.0...v0.101.0-alpha.1) (2026-04-08)
 
 
