@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-04-11T11:23:25.265Z",
+  "runtime": "node",
+  "nodeVersion": "v22.22.2",
+  "platform": "linux",
+  "arch": "x64",
+  "results": [
+    {
+      "Test Case": "Find first entry (id: 0)",
+      "Duration (ms)": "2.61",
+      "Duration (s)": "0.00",
+      "Result Found": "Yes",
+      "Format": "json"
+    },
+    {
+      "Test Case": "Find (id: 100,000)",
+      "Duration (ms)": "495.37",
+      "Duration (s)": "0.50",
+      "Result Found": "Yes",
+      "Format": "json"
+    },
+    {
+      "Test Case": "Find middle entry (id: 1,000,000)",
+      "Duration (ms)": "4322.90",
+      "Duration (s)": "4.32",
+      "Result Found": "Yes",
+      "Format": "json"
+    },
+    {
+      "Test Case": "Find last entry (id: 1,999,999)",
+      "Duration (ms)": "8636.91",
+      "Duration (s)": "8.64",
+      "Result Found": "Yes",
+      "Format": "json"
+    },
+    {
+      "Test Case": "Find first entry (id: 0)",
+      "Duration (ms)": "1.48",
+      "Duration (s)": "0.00",
+      "Result Found": "Yes",
+      "Format": "json5"
+    },
+    {
+      "Test Case": "Find (id: 100,000)",
+      "Duration (ms)": "1202.61",
+      "Duration (s)": "1.20",
+      "Result Found": "Yes",
+      "Format": "json5"
+    },
+    {
+      "Test Case": "Find middle entry (id: 1,000,000)",
+      "Duration (ms)": "11767.58",
+      "Duration (s)": "11.77",
+      "Result Found": "Yes",
+      "Format": "json5"
+    },
+    {
+      "Test Case": "Find last entry (id: 1,999,999)",
+      "Duration (ms)": "23786.39",
+      "Duration (s)": "23.79",
+      "Result Found": "Yes",
+      "Format": "json5"
+    }
+  ]
+}
