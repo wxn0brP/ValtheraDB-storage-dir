@@ -9,6 +9,14 @@ const BENCHMARK_DIR = "benchmark_temp_large";
 const DATA_FILE = join(BENCHMARK_DIR, "large_data.txt");
 const NUM_ENTRIES = 2_000_000;
 
+function getMemMB() {
+    const m = process.memoryUsage();
+    return {
+        rss: m.rss / 1024 / 1024,
+        heapUsed: m.heapUsed / 1024 / 1024
+    };
+}
+
 async function setup() {
     console.log("Setting up large benchmark environment...");
     if (existsSync(BENCHMARK_DIR)) {
@@ -73,7 +81,17 @@ const results: any[] = [];
 async function runBenchmark(format: Format, formatName: string) {
     for (const query of searchQueries) {
         console.log(`\nRunning: ${query.description}`);
+
         const startTime = performance.now();
+        const startCPU = process.cpuUsage();
+        const startMem = getMemMB();
+
+        let peakRSS = startMem.rss;
+
+        const memInterval = setInterval(() => {
+            const current = getMemMB();
+            if (current.rss > peakRSS) peakRSS = current.rss;
+        }, 50);
 
         const queryConfig: FindOneQuery = {
             collection: "large_data",
@@ -90,20 +108,38 @@ async function runBenchmark(format: Format, formatName: string) {
         }
 
         const result = await findOne(DATA_FILE, queryConfig);
+
+        clearInterval(memInterval);
+
         const endTime = performance.now();
+        const cpu = process.cpuUsage(startCPU);
+        const endMem = getMemMB();
+
         const duration = endTime - startTime;
+        const cpuMs = (cpu.user + cpu.system) / 1000;
 
         results.push({
             "Test Case": query.description,
-            "Duration (ms)": duration.toFixed(2),
-            "Duration (s)": (duration / 1000).toFixed(2),
-            "Result Found": result ? "Yes" : "No",
-            "Format": formatName
+            "Format": formatName,
+
+            // time
+            "Wall Time (ms)": duration.toFixed(2),
+            "CPU Time (ms)": cpuMs.toFixed(2),
+
+            // memory
+            "RAM Start (MB)": startMem.rss.toFixed(2),
+            "RAM End (MB)": endMem.rss.toFixed(2),
+            "RAM Peak (MB)": peakRSS.toFixed(2),
+            "Heap Used (MB)": endMem.heapUsed.toFixed(2),
+
+            // result
+            "Result Found": result ? "Yes" : "No"
         });
     }
 }
 
 await runBenchmark(format.json, "json");
+
 await format.json5?.init?.();
 const json5 = extendJson(format.json5);
 await runBenchmark(json5, "json5");
@@ -119,11 +155,13 @@ const benchmarkResults = {
     nodeVersion: process.version,
     platform: process.platform,
     arch: process.arch,
-    results: results
+    results
 };
+
 const runtimeSuffix = isBun ?
     "bun_" + process.argv[2] :
     `node_${process.version.match(/v(\d+)/)?.[1] || "node"}`;
+
 const resultsFileName = `benchmark_results_${runtimeSuffix}.json`;
 writeFileSync(resultsFileName, JSON.stringify(benchmarkResults, null, 2));
 
