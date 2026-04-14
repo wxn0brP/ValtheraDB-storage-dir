@@ -8,6 +8,8 @@ This plugin provides directory-based operations for ValtheraDB.
 npm install @wxn0brp/db-storage-dir json5
 ```
 
+> **Note:** `json5` is an optional dependency. When running with Bun, native JSON5 support is used automatically. Set `VALTHERA_DIR_DISABLE_BUN=1` to disable Bun's native JSON5 and use the `json5` package instead.
+
 ## Usage
 
 ```typescript
