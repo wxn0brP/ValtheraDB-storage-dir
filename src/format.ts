@@ -19,13 +19,16 @@ export const format: Record<string, Format> = {
             return json5.stringify(data);
         },
         async init() {
-            if (!json5) json5 = await import("json5");
+            if (json5) return;
+            // @ts-ignore
+            if (typeof Bun !== "undefined" && Bun?.JSON5 && !process?.env?.VALTHERA_DIR_DISABLE_BUN) json5 = Bun.JSON5;
+            else json5 = await import("json5");
         }
     },
 }
 
 export function extendJson(format: Format): Format {
-    if (format._extended) return;
+    if (format._extended) return format;
 
     return {
         ...format,
