@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.101.1](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.101.0...v0.101.1) (2026-04-30)
+
+
+### Features
+
+* improve json5 format ([da0470c](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/da0470c7266e212895ae3cb22369edc4303dd3dd))
+
+
+### Bug Fixes
+
+* import json5 ([1b2907f](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/1b2907f50c832126cbdb6ceb8a4df93cdb570927))
+
 ## [0.101.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.101.0-alpha.1...v0.101.0) (2026-04-11)
 
 
