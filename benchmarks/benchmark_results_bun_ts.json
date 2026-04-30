@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-04-30T15:46:48.322Z",
+  "runtime": "bun",
+  "nodeVersion": "v24.3.0",
+  "platform": "linux",
+  "arch": "x64",
+  "results": [
+    {
+      "Test Case": "Find first entry (id: 0)",
+      "Format": "json",
+      "Wall Time (ms)": "5.65",
+      "CPU Time (ms)": "8.07",
+      "RAM Start (MB)": "105.61",
+      "RAM End (MB)": "106.61",
+      "RAM Peak (MB)": "105.61",
+      "Heap Used (MB)": "34.77",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find (id: 100,000)",
+      "Format": "json",
+      "Wall Time (ms)": "405.98",
+      "CPU Time (ms)": "484.07",
+      "RAM Start (MB)": "106.61",
+      "RAM End (MB)": "124.29",
+      "RAM Peak (MB)": "124.47",
+      "Heap Used (MB)": "3.85",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find middle entry (id: 1,000,000)",
+      "Format": "json",
+      "Wall Time (ms)": "3654.91",
+      "CPU Time (ms)": "3790.22",
+      "RAM Start (MB)": "124.29",
+      "RAM End (MB)": "120.50",
+      "RAM Peak (MB)": "127.27",
+      "Heap Used (MB)": "5.49",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find last entry (id: 1,999,999)",
+      "Format": "json",
+      "Wall Time (ms)": "7488.14",
+      "CPU Time (ms)": "7692.96",
+      "RAM Start (MB)": "120.50",
+      "RAM End (MB)": "116.89",
+      "RAM Peak (MB)": "131.11",
+      "Heap Used (MB)": "3.57",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find first entry (id: 0)",
+      "Format": "json5",
+      "Wall Time (ms)": "1.03",
+      "CPU Time (ms)": "1.13",
+      "RAM Start (MB)": "117.14",
+      "RAM End (MB)": "117.39",
+      "RAM Peak (MB)": "117.14",
+      "Heap Used (MB)": "3.57",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find (id: 100,000)",
+      "Format": "json5",
+      "Wall Time (ms)": "524.45",
+      "CPU Time (ms)": "574.42",
+      "RAM Start (MB)": "117.39",
+      "RAM End (MB)": "110.92",
+      "RAM Peak (MB)": "117.39",
+      "Heap Used (MB)": "6.22",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find middle entry (id: 1,000,000)",
+      "Format": "json5",
+      "Wall Time (ms)": "5062.79",
+      "CPU Time (ms)": "5212.76",
+      "RAM Start (MB)": "110.92",
+      "RAM End (MB)": "101.25",
+      "RAM Peak (MB)": "111.91",
+      "Heap Used (MB)": "3.56",
+      "Result Found": "Yes"
+    },
+    {
+      "Test Case": "Find last entry (id: 1,999,999)",
+      "Format": "json5",
+      "Wall Time (ms)": "10217.70",
+      "CPU Time (ms)": "10506.71",
+      "RAM Start (MB)": "101.25",
+      "RAM End (MB)": "115.86",
+      "RAM Peak (MB)": "116.57",
+      "Heap Used (MB)": "6.54",
+      "Result Found": "Yes"
+    }
+  ]
+}
