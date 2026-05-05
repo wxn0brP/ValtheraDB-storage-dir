@@ -140,4 +140,4 @@ jobs:
           git checkout --orphan benchmark
           git add benchmark_*.json
           git commit -m "benchmark results"
-          git push origin --force
+          git push origin benchmark --force
