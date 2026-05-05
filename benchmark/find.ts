@@ -153,20 +153,21 @@ const benchmarkResults = {
     timestamp: new Date().toISOString(),
     runtime: isBun ? "bun" : "node",
     nodeVersion: process.version,
+    bunVersion: process.versions?.bun,
     platform: process.platform,
     arch: process.arch,
     results
 };
 
-const runtimeSuffix = isBun ?
-    "bun_" + process.argv[2] :
-    `node_${process.version.match(/v(\d+)/)?.[1] || "node"}`;
+const resultsFileName = process.argv[2] || "latest";
+writeFileSync(resultsFileName + ".json", JSON.stringify(benchmarkResults, null, 2));
 
-const resultsFileName = `benchmark_results_${runtimeSuffix}.json`;
-writeFileSync(resultsFileName, JSON.stringify(benchmarkResults, null, 2));
-
-console.log(`\nBenchmark results saved to ${resultsFileName}`);
+console.log(`\nBenchmark results saved to ${resultsFileName}.json`);
 
 console.log("\nCleaning up benchmark environment...");
-rmSync(BENCHMARK_DIR, { recursive: true, force: true });
-console.log("Cleanup complete.");
+try {
+    rmSync(BENCHMARK_DIR, { recursive: true, force: true });
+    console.log("Cleanup complete.");
+} catch (err) {
+    console.error(`Error cleaning up benchmark environment: ${err}`);
+}

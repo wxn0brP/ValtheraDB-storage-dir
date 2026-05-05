@@ -5,9 +5,10 @@ on:
     branches:
       - master
     paths:
-      - benchmark
-      - src
+      - benchmark/**
+      - src/**
       - package.json
+      - .github/workflows/benchmark.yml
 
   workflow_dispatch:
 
@@ -36,20 +37,20 @@ jobs:
       - name: Build and run benchmark
         run: |
           bun build benchmark/find.ts --outfile benchmark/find.js --target=node
-          bun run benchmark/find.ts ts
-          bun run benchmark/find.js js
+          bun run benchmark/find.ts benchmark_bun_ts
+          bun run benchmark/find.js benchmark_bun_js
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-bun_ts
-          path: benchmark_results_bun_ts.json
+          name: benchmark_bun_ts
+          path: benchmark_bun_ts.json
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-bun_js
-          path: benchmark_results_bun_js.json
+          name: benchmark_bun_js
+          path: benchmark_bun_js.json
 
       - name: Upload built benchmark file
         uses: actions/upload-artifact@v4
@@ -57,23 +58,18 @@ jobs:
           name: benchmark-built-file
           path: benchmark/find.js
 
-  benchmark-node:
+  benchmark-node-ubuntu:
     runs-on: ubuntu-latest
     needs: benchmark-bun
 
     strategy:
       matrix:
-        node-version:
-          - 20
-          - 22
-          - 24
+        include:
+          - node-version: 20
+          - node-version: 22
+          - node-version: 24
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -85,66 +81,63 @@ jobs:
           name: benchmark-built-file
           path: benchmark
 
-      - name: Install dependencies
-        run: npm install && npm install json5
-
       - name: Run benchmark
-        run: node benchmark/find.js
+        run: |
+          fileName="benchmark_node_${{ matrix.node-version }}_ubuntu"
+          node benchmark/find.js "$fileName"
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-results-node-${{ matrix.node-version }}
-          path: benchmark_results_node_${{ matrix.node-version }}.json
+          name: benchmark_node_${{ matrix.node-version }}_ubuntu
+          path: benchmark_node_${{ matrix.node-version }}_ubuntu.json
+
+  benchmark-node-windows:
+    runs-on: windows-latest
+    needs: benchmark-bun
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Download built benchmark file
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-built-file
+          path: benchmark
+
+      - name: Run benchmark
+        run: |
+          node benchmark/find.js benchmark_node_24_windows
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark_node_24_windows
+          path: benchmark_node_24_windows.json
 
   push-benchmark-results:
-    needs: [ benchmark-node, benchmark-bun ]
+    needs: [ benchmark-node-ubuntu, benchmark-node-windows, benchmark-bun ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Download benchmark results
         uses: actions/download-artifact@v4
         with:
-          path: ./temp_benchmarks
+          path: .
+          merge-multiple: true
 
-      - name: Move benchmark results to root
+      - name: Commit benchmark results
         run: |
-          mkdir -p benchmarks
-          for file in temp_benchmarks/*/*; do
-            cp "$file" benchmarks/
-          done
-          ls -la benchmarks/
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add origin https://github.com/wxn0brP/ValtheraDB-storage-dir.git
 
-      - name: Configure Git
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Create or switch to benchmark branch
-        run: |
-          git fetch origin benchmark 2>/dev/null || echo "Branch does not exist yet"
-
-          # Check if benchmark branch exists
-          if git show-ref --verify --quiet refs/heads/benchmark; then
-            # Branch exists, just checkout
-            git checkout benchmark
-          else
-            # Branch doesn't exist, create orphan branch
-            git checkout --orphan benchmark
-            git reset --hard
-          fi
-
-          git add benchmarks
-          git status
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Add/update benchmark results [skip ci]"
-            git push -u origin benchmark --force
-          fi
+          git checkout --orphan benchmark
+          git add benchmark_*.json
+          git commit -m "benchmark results"
+          git push origin --force
