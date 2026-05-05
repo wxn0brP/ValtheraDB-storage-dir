@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - master
+    paths:
+      - benchmark
+      - src
+      - package.json
 
   workflow_dispatch:
 
 concurrency:
-  group: benchmark-master
+  group: benchmark
   cancel-in-progress: true
 
 jobs:
@@ -59,7 +63,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        node-version:
+          - 20
+          - 22
+          - 24
 
     steps:
       - name: Checkout code
@@ -91,7 +98,7 @@ jobs:
           path: benchmark_results_node_${{ matrix.node-version }}.json
 
   push-benchmark-results:
-    needs: [benchmark-node, benchmark-bun]
+    needs: [ benchmark-node, benchmark-bun ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
 
