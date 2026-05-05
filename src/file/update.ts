@@ -2,22 +2,21 @@ import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { UpdateQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
 import { updateObjectAdvanced } from "@wxn0brp/db-core/utils/updateObject";
-import { existsSync, promises } from "fs";
+import { createWriteStream, promises } from "fs";
+import { exists } from "../utils";
 import { createRL } from "./utils";
 
-/**
- * Updates a file based on search criteria and an updater function or object.
- */
 export async function update(file: string, config: UpdateQuery, one: boolean) {
     file = pathRepair(file);
-    if (!existsSync(file)) {
-        await promises.writeFile(file, "");
-        return [];
-    }
-    await promises.copyFile(file, file + ".tmp");
-    await promises.writeFile(file, "");
 
-    const rl = createRL(file + ".tmp");
+    if (!await exists(file)) return [];
+
+    const tmpFile = file + ".tmp";
+    await promises.writeFile(tmpFile, "");
+
+    const rl = createRL(file);
+    const ws = createWriteStream(tmpFile, { flags: "a" });
+
     const { search, updater, context } = config;
 
     let updated = [];
@@ -26,21 +25,22 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
         const trimmed = line.trim();
 
         if (one && updated.length) {
-            await promises.appendFile(file, trimmed + "\n");
+            ws.write(trimmed);
+            ws.write("\n");
             continue;
         }
 
         if (!trimmed) continue;
         const data = config.control.dir.format.parse(trimmed);
-        let ob = false;
+        let match = false;
 
         if (typeof search === "function") {
-            ob = search(data, context) || false;
+            match = search(data, context) || false;
         } else if (typeof search === "object" && !Array.isArray(search)) {
-            ob = hasFieldsAdvanced(data, search);
+            match = hasFieldsAdvanced(data, search);
         }
 
-        if (ob) {
+        if (match) {
             let updateObj = data;
             if (typeof updater === "function") {
                 const updateObjValue = updater(data, context);
@@ -52,8 +52,15 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
             updated.push(updateObj);
         }
 
-        await promises.appendFile(file, line + "\n");
+        ws.write(line);
+        ws.write("\n");
     }
-    await promises.writeFile(file + ".tmp", "");
+    rl.close();
+
+    await new Promise((res, rej) => {
+        ws.end(err => err ? rej(err) : res(null));
+    });
+    await promises.rename(tmpFile, file);
+
     return updated;
 }

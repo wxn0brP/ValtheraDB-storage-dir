@@ -3,6 +3,7 @@ import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { vFileCpu } from "../src/file";
 import { format } from "../src/format";
+import { exists } from "../src/utils";
 
 const TEST_DIR = join(process.cwd(), "test_temp_file_cpu");
 const TEST_FILE = join(TEST_DIR, "test.db");
@@ -158,7 +159,7 @@ describe("file CPU operations", () => {
             expect((result as any)?.name).toBe("first");
         });
 
-        it("2. should return false for no matches", async () => {
+        it("2. should return null for no matches", async () => {
             const result = await vFileCpu.findOne(TEST_FILE, {
                 collection: "test",
                 search: { id: "nonexistent" },
@@ -166,10 +167,10 @@ describe("file CPU operations", () => {
                 control: getControl(),
             });
 
-            expect(result).toBe(false);
+            expect(result).toBe(null);
         });
 
-        it("3. should return false for empty file", async () => {
+        it("3. should return null for empty file", async () => {
             const emptyFile = join(TEST_DIR, "empty.db");
             await writeFile(emptyFile, "");
 
@@ -180,7 +181,7 @@ describe("file CPU operations", () => {
                 control: getControl(),
             });
 
-            expect(result).toBe(false);
+            expect(result).toBe(null);
         });
 
         it("4. should stop after first match", async () => {
@@ -283,19 +284,6 @@ describe("file CPU operations", () => {
             }, false);
 
             expect(updated).toEqual([]);
-        });
-
-        it("6. should create empty file if it doesn't exist", async () => {
-            const nonExistentFile = join(TEST_DIR, "nonexistent.db");
-            await vFileCpu.update(nonExistentFile, {
-                collection: "test",
-                search: {},
-                updater: (item: any) => item,
-                context: {},
-                control: getControl(),
-            }, false);
-
-            expect(await Bun.file(nonExistentFile).text()).toBe("");
         });
     });
 

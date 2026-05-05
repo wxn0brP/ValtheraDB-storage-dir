@@ -1,22 +1,20 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { RemoveQuery } from "@wxn0brp/db-core/types/query";
 import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
-import { appendFileSync, existsSync, promises } from "fs";
+import { createWriteStream, promises } from "fs";
 import { createRL } from "./utils";
+import { exists } from "../utils";
 
-/**
- * Removes entries from a file based on search criteria.
- */
 export async function remove(file: string, config: RemoveQuery, one: boolean) {
     file = pathRepair(file);
-    if (!existsSync(file)) {
-        await promises.writeFile(file, "");
-        return [];
-    }
-    await promises.copyFile(file, file + ".tmp");
-    await promises.writeFile(file, "");
 
-    const rl = createRL(file + ".tmp");
+    if (!await exists(file)) return [];
+
+    const tmpFile = file + ".tmp";
+    await promises.writeFile(tmpFile, "");
+
+    const rl = createRL(file);
+    const ws = createWriteStream(tmpFile, { flags: "a" });
     const { search, context } = config;
 
     let removed = [];
@@ -25,7 +23,8 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
         const trimmed = line.trim();
 
         if (one && removed.length) {
-            appendFileSync(file, trimmed + "\n");
+            ws.write(trimmed);
+            ws.write("\n");
             continue;
         }
         if (!trimmed) continue;
@@ -44,8 +43,15 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
             }
         }
 
-        appendFileSync(file, line + "\n");
+        ws.write(trimmed);
+        ws.write("\n");
     }
-    await promises.writeFile(file + ".tmp", "");
+
+    rl.close();
+    await new Promise((res, rej) => {
+        ws.end(err => err ? rej(err) : res(null));
+    });
+    await promises.rename(tmpFile, file);
+
     return removed;
 }

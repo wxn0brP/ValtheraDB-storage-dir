@@ -4,9 +4,6 @@ import { exists } from "./utils";
 import { DataInternal } from "@wxn0brp/db-core/types/data";
 
 export class FileActionsUtils {
-    /**
-     * Get the last file in the specified directory.
-     */
     async getLastFile(path: string, maxFileSize: number, query: VQuery) {
         if (!await exists(path))
             await mkdir(path, { recursive: true });
@@ -30,9 +27,6 @@ export class FileActionsUtils {
         return num + ".db";
     }
 
-    /**
-     * Get all files in a directory sorted by name.
-     */
     async getSortedFiles(folder: string, query: VQuery): Promise<string[]> {
         const files = await readdir(folder, { withFileTypes: true });
 

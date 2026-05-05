@@ -11,10 +11,6 @@ import { DbDirOpts, Format } from "./types";
 import { exists } from "./utils";
 import { extendJson, format } from "./format";
 
-/**
- * A class representing database actions on files.
- * @class
- */
 export class FileActions extends ActionsBase {
     folder: string;
     options: DbDirOpts;
