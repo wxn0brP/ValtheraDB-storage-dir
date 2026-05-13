@@ -23,7 +23,7 @@ export class FileActionsUtils {
         await writeFile(path + "/" + num + ".db", "");
         query.control ||= {} as any;
         query.control.dir ||= {};
-        query.context.dir.lastFileNum = num;
+        query.control.dir.lastFileNum = num;
         return num + ".db";
     }
 
