@@ -1,12 +1,11 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { UpdateQuery } from "@wxn0brp/db-core/types/query";
-import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
-import { updateObjectAdvanced } from "@wxn0brp/db-core/utils/updateObject";
+import { VQueryT } from "@wxn0brp/db-core/types/query";
+import { match, update as updateUtil } from "@wxn0brp/db-core/utils/process";
 import { createWriteStream, promises } from "fs";
 import { exists } from "../utils";
 import { createRL } from "./utils";
 
-export async function update(file: string, config: UpdateQuery, one: boolean) {
+export async function update(file: string, config: VQueryT.Update, one: boolean) {
     file = pathRepair(file);
 
     if (!await exists(file)) return [];
@@ -32,22 +31,9 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
 
         if (!trimmed) continue;
         const data = config.control.dir.format.parse(trimmed);
-        let match = false;
 
-        if (typeof search === "function") {
-            match = search(data, context) || false;
-        } else if (typeof search === "object" && !Array.isArray(search)) {
-            match = hasFieldsAdvanced(data, search);
-        }
-
-        if (match) {
-            let updateObj = data;
-            if (typeof updater === "function") {
-                const updateObjValue = updater(data, context);
-                if (updateObjValue) updateObj = updateObjValue;
-            } else if (typeof updater === "object" && !Array.isArray(updater)) {
-                updateObj = updateObjectAdvanced(data, updater);
-            }
+        if (match(config, data)) {
+            const updateObj = updateUtil(config, data);
             line = config.control.dir.format.stringify(updateObj);
             updated.push(updateObj);
         }
@@ -58,7 +44,7 @@ export async function update(file: string, config: UpdateQuery, one: boolean) {
     rl.close();
 
     await new Promise((res, rej) => {
-        ws.end(err => err ? rej(err) : res(null));
+        ws.end((err: any) => err ? rej(err) : res(null));
     });
     await promises.rename(tmpFile, file);
 

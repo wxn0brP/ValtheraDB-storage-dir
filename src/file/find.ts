@@ -1,28 +1,10 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { FindOneQuery, FindQuery } from "@wxn0brp/db-core/types/query";
-import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
-import { updateFindObject } from "@wxn0brp/db-core/utils/updateFindObject";
+import { VQueryT } from "@wxn0brp/db-core/types/query";
+import { findProcessLine } from "@wxn0brp/db-core/utils/process";
 import { exists } from "../utils";
 import { createRL } from "./utils";
 
-function findProcesLine(config: FindQuery | FindOneQuery, line: string) {
-    const obj = config.control.dir.format.parse(line);
-    let res = false;
-
-    const { search, context, findOpts = {} } = config;
-
-    if (typeof search === "function") {
-        if (search(obj, context)) res = true;
-    } else if (typeof search === "object" && !Array.isArray(search)) {
-        if (hasFieldsAdvanced(obj, search)) res = true;
-    }
-
-    if (res) return updateFindObject(obj, findOpts);
-    return null;
-}
-
-
-export async function find(file: string, config: FindQuery): Promise<any[]> {
+export async function find(file: string, config: VQueryT.Find): Promise<any[]> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!await exists(file)) {
@@ -37,7 +19,7 @@ export async function find(file: string, config: FindQuery): Promise<any[]> {
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = findProcesLine(config, trimmed);
+            const res = findProcessLine(config, config.control.dir.format.parse(line));
             if (res) results.push(res);
         };
         resolve(results);
@@ -45,7 +27,7 @@ export async function find(file: string, config: FindQuery): Promise<any[]> {
     })
 }
 
-export async function findOne(file: string, config: FindOneQuery): Promise<any | null> {
+export async function findOne(file: string, config: VQueryT.FindOne): Promise<any | null> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!await exists(file)) {
@@ -59,7 +41,7 @@ export async function findOne(file: string, config: FindOneQuery): Promise<any |
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = findProcesLine(config, trimmed);
+            const res = findProcessLine(config, config.control.dir.format.parse(line));
             if (res) {
                 resolve(res);
                 rl.close();

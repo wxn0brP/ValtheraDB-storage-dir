@@ -1,11 +1,11 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
-import { RemoveQuery } from "@wxn0brp/db-core/types/query";
-import { hasFieldsAdvanced } from "@wxn0brp/db-core/utils/hasFieldsAdvanced";
+import { VQueryT } from "@wxn0brp/db-core/types/query";
+import { match } from "@wxn0brp/db-core/utils/process";
 import { createWriteStream, promises } from "fs";
-import { createRL } from "./utils";
 import { exists } from "../utils";
+import { createRL } from "./utils";
 
-export async function remove(file: string, config: RemoveQuery, one: boolean) {
+export async function remove(file: string, config: VQueryT.Remove, one: boolean) {
     file = pathRepair(file);
 
     if (!await exists(file)) return [];
@@ -15,7 +15,6 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
 
     const rl = createRL(file);
     const ws = createWriteStream(tmpFile, { flags: "a" });
-    const { search, context } = config;
 
     let removed = [];
     for await (let line of rl) {
@@ -30,17 +29,9 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
         if (!trimmed) continue;
 
         const data = config.control.dir.format.parse(trimmed);
-
-        if (typeof search === "function") {
-            if (search(data, context)) {
-                removed.push(data);
-                continue;
-            }
-        } else if (typeof search === "object" && !Array.isArray(search)) {
-            if (hasFieldsAdvanced(data, search)) {
-                removed.push(data);
-                continue;
-            }
+        if (match(config, data)) {
+            removed.push(data);
+            continue;
         }
 
         ws.write(trimmed);
@@ -49,7 +40,7 @@ export async function remove(file: string, config: RemoveQuery, one: boolean) {
 
     rl.close();
     await new Promise((res, rej) => {
-        ws.end(err => err ? rej(err) : res(null));
+        ws.end((err: any) => err ? rej(err) : res(null));
     });
     await promises.rename(tmpFile, file);
 

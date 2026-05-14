@@ -2,7 +2,6 @@ import { ActionsBase } from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
-import * as Query from "@wxn0brp/db-core/types/query";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
@@ -10,6 +9,7 @@ import { FileActionsUtils } from "./action.utils";
 import { DbDirOpts, Format } from "./types";
 import { exists } from "./utils";
 import { extendJson, format } from "./format";
+import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
 
 export class FileActions extends ActionsBase {
     folder: string;
@@ -19,7 +19,6 @@ export class FileActions extends ActionsBase {
 
     /**
      * Creates a new instance of FileActions.
-     * @constructor
      * @param folder - The folder where database files are stored.
      * @param options - The options object.
      * @param fileCpu - The file cpu instance
@@ -63,7 +62,7 @@ export class FileActions extends ActionsBase {
         return this.folder + "/" + collection + "/";
     }
 
-    _ensureQueryFormat(query: Query.VQuery) {
+    _ensureQueryFormat(query: VQuery) {
         query.control ||= {};
         query.control.dir ||= {};
         query.control.dir.format ||= this.format;
@@ -113,7 +112,7 @@ export class FileActions extends ActionsBase {
     /**
      * Add a new entry to the specified database.
      */
-    async add(query: Query.AddQuery) {
+    async add(query: VQueryT.Add) {
         const { collection, data } = query;
         this._ensureQueryFormat(query);
 
@@ -129,7 +128,7 @@ export class FileActions extends ActionsBase {
     /**
      * Find entries in the specified database based on search criteria.
      */
-    async find(query: Query.FindQuery) {
+    async find(query: VQueryT.Find) {
         await this.ensureCollection(query.collection);
         this._ensureQueryFormat(query);
 
@@ -145,7 +144,7 @@ export class FileActions extends ActionsBase {
     /**
      * Find the first matching entry in the specified database based on search criteria.
      */
-    async findOne(query: Query.FindOneQuery) {
+    async findOne(query: VQueryT.FindOne) {
         const { collection } = query;
         this._ensureQueryFormat(query);
 
@@ -163,7 +162,7 @@ export class FileActions extends ActionsBase {
     /**
      * Update entries in the specified database based on search criteria and an updater function or object.
      */
-    async update(query: Query.UpdateQuery) {
+    async update(query: VQueryT.Update) {
         const { collection } = query;
         this._ensureQueryFormat(query);
 
@@ -180,7 +179,7 @@ export class FileActions extends ActionsBase {
     /**
      * Update the first matching entry in the specified database based on search criteria and an updater function or object.
      */
-    async updateOne(query: Query.UpdateQuery) {
+    async updateOne(query: VQueryT.Update) {
         const { collection } = query;
         this._ensureQueryFormat(query);
 
@@ -199,7 +198,7 @@ export class FileActions extends ActionsBase {
     /**
      * Remove entries from the specified database based on search criteria.
      */
-    async remove(query: Query.RemoveQuery) {
+    async remove(query: VQueryT.Remove) {
         const { collection } = query;
         this._ensureQueryFormat(query);
 
@@ -216,7 +215,7 @@ export class FileActions extends ActionsBase {
     /**
      * Remove the first matching entry from the specified database based on search criteria.
      */
-    async removeOne(query: Query.RemoveQuery) {
+    async removeOne(query: VQueryT.Remove) {
         const { collection } = query;
         this._ensureQueryFormat(query);
 
