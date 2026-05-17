@@ -1,6 +1,6 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
-import { match } from "@wxn0brp/db-core/utils/process";
+import { matchObj } from "@wxn0brp/db-core/utils/process";
 import { createWriteStream, promises } from "fs";
 import { exists } from "../utils";
 import { createRL } from "./utils";
@@ -29,7 +29,7 @@ export async function remove(file: string, config: VQueryT.Remove, one: boolean)
         if (!trimmed) continue;
 
         const data = config.control.dir.format.parse(trimmed);
-        if (match(config, data)) {
+        if (matchObj(config, data)) {
             removed.push(data);
             continue;
         }

@@ -1,6 +1,6 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
-import { findProcessLine } from "@wxn0brp/db-core/utils/process";
+import { findObj } from "@wxn0brp/db-core/utils/process";
 import { exists } from "../utils";
 import { createRL } from "./utils";
 
@@ -19,7 +19,7 @@ export async function find(file: string, config: VQueryT.Find): Promise<any[]> {
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = findProcessLine(config, config.control.dir.format.parse(line));
+            const res = findObj(config, config.control.dir.format.parse(line));
             if (res) results.push(res);
         };
         resolve(results);
@@ -41,7 +41,7 @@ export async function findOne(file: string, config: VQueryT.FindOne): Promise<an
             const trimmed = line.trim();
             if (!trimmed) continue;
 
-            const res = findProcessLine(config, config.control.dir.format.parse(line));
+            const res = findObj(config, config.control.dir.format.parse(line));
             if (res) {
                 resolve(res);
                 rl.close();
