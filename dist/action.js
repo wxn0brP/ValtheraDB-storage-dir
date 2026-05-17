@@ -1,0 +1,186 @@
+import { ActionsBase } from "@wxn0brp/db-core/base/actions";
+import { addId } from "@wxn0brp/db-core/helpers/addId";
+import { findUtil } from "@wxn0brp/db-core/utils/action";
+import { promises } from "fs";
+import { resolve, sep } from "path";
+import { FileActionsUtils } from "./action.utils.js";
+import { exists } from "./utils.js";
+import { extendJson, format } from "./format.js";
+export class FileActions extends ActionsBase {
+    fileCpu;
+    utils;
+    folder;
+    options;
+    _inited = false;
+    format;
+    /**
+     * Creates a new instance of FileActions.
+     * @param folder - The folder where database files are stored.
+     * @param options - The options object.
+     * @param fileCpu - The file cpu instance
+     * @param utils - The utils instance
+     */
+    constructor(folder, options, fileCpu, utils = new FileActionsUtils()) {
+        super();
+        this.fileCpu = fileCpu;
+        this.utils = utils;
+        this.folder = folder;
+        this.options = {
+            maxFileSize: 2 * 1024 * 1024, //2 MB
+            format: "json",
+            ...options,
+        };
+        if (typeof this.options.format === "string") {
+            const [name, x] = this.options.format.split(":");
+            if (format[name]) {
+                if (x)
+                    this.format = extendJson(format[name]);
+                else
+                    this.format = { ...format[name] };
+            }
+            else {
+                throw new Error(`Unknown format: ${this.options.format}`);
+            }
+        }
+    }
+    async init() {
+        if (!await exists(this.folder))
+            await promises.mkdir(this.folder, { recursive: true });
+        await this.format?.init?.();
+    }
+    _getCollectionPath(collection) {
+        return this.folder + "/" + collection + "/";
+    }
+    _ensureQueryFormat(query) {
+        query.control ||= {};
+        query.control.dir ||= {};
+        query.control.dir.format ||= this.format;
+    }
+    /**
+     * Get a list of available databases in the specified folder.
+     */
+    async getCollections() {
+        const allCollections = await promises.readdir(this.folder, { recursive: true, withFileTypes: true });
+        const collections = allCollections
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => {
+            const parentPath = resolve(dirent.parentPath);
+            const baseFolder = resolve(this.folder);
+            if (parentPath === baseFolder)
+                return dirent.name;
+            return parentPath.replace(baseFolder + sep, "") + "/" + dirent.name;
+        });
+        return collections;
+    }
+    /**
+     * Check and create the specified collection if it doesn't exist.
+     */
+    async ensureCollection(collection) {
+        if (await this.issetCollection(collection))
+            return false;
+        const c_path = this._getCollectionPath(collection);
+        await promises.mkdir(c_path, { recursive: true });
+        return true;
+    }
+    /**
+     * Check if a collection exists.
+     */
+    async issetCollection(collection) {
+        const path = this._getCollectionPath(collection);
+        try {
+            await promises.access(path);
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+    /**
+     * Add a new entry to the specified database.
+     */
+    async add(query) {
+        const { collection, data } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(collection);
+        const c_path = this._getCollectionPath(collection);
+        const file = c_path + await this.utils.getLastFile(c_path, this.options.maxFileSize, query);
+        await addId(query, this);
+        await this.fileCpu.add(file, query);
+        return data;
+    }
+    /**
+     * Find entries in the specified database based on search criteria.
+     */
+    async find(query) {
+        await this.ensureCollection(query.collection);
+        this._ensureQueryFormat(query);
+        const c_path = this._getCollectionPath(query.collection);
+        let files = await this.utils.getSortedFiles(c_path, query);
+        if (files.length == 0)
+            return [];
+        files = files.map(file => c_path + file);
+        const data = await findUtil(query, this.fileCpu, files);
+        return data || [];
+    }
+    /**
+     * Find the first matching entry in the specified database based on search criteria.
+     */
+    async findOne(query) {
+        const { collection } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(collection);
+        const c_path = this._getCollectionPath(collection);
+        const files = await this.utils.getSortedFiles(c_path, query);
+        for (let f of files) {
+            let data = await this.fileCpu.findOne(c_path + f, query);
+            if (data)
+                return data;
+        }
+        return null;
+    }
+    /**
+     * Update entries in the specified database based on search criteria and an updater function or object.
+     */
+    async update(query) {
+        const { collection } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(collection);
+        return await this.utils.operationUpdater(this._getCollectionPath(collection), this.fileCpu.update.bind(this.fileCpu), false, query);
+    }
+    /**
+     * Update the first matching entry in the specified database based on search criteria and an updater function or object.
+     */
+    async updateOne(query) {
+        const { collection } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(collection);
+        const res = await this.utils.operationUpdater(this._getCollectionPath(collection), this.fileCpu.update.bind(this.fileCpu), true, query);
+        return res[0] ?? null;
+    }
+    /**
+     * Remove entries from the specified database based on search criteria.
+     */
+    async remove(query) {
+        const { collection } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(query.collection);
+        return await this.utils.operationUpdater(this._getCollectionPath(collection), this.fileCpu.remove.bind(this.fileCpu), false, query);
+    }
+    /**
+     * Remove the first matching entry from the specified database based on search criteria.
+     */
+    async removeOne(query) {
+        const { collection } = query;
+        this._ensureQueryFormat(query);
+        await this.ensureCollection(query.collection);
+        const res = await this.utils.operationUpdater(this._getCollectionPath(collection), this.fileCpu.remove.bind(this.fileCpu), true, query);
+        return res[0] ?? null;
+    }
+    /**
+     * Removes a database collection from the file system.
+     */
+    async removeCollection(collection) {
+        await promises.rm(this.folder + "/" + collection, { recursive: true, force: true });
+        return true;
+    }
+}
