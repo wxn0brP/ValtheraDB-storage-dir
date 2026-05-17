@@ -16,8 +16,6 @@ export async function update(file: string, config: VQueryT.Update, one: boolean)
     const rl = createRL(file);
     const ws = createWriteStream(tmpFile, { flags: "a" });
 
-    const { search, updater, context } = config;
-
     let updated = [];
     for await (let line of rl) {
         if (!line) continue;
