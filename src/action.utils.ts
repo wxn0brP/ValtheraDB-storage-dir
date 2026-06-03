@@ -2,6 +2,7 @@ import { VQuery } from "@wxn0brp/db-core/types/query";
 import { mkdir, readdir, stat, writeFile } from "fs/promises";
 import { exists } from "./utils";
 import { DataInternal } from "@wxn0brp/db-core/types/data";
+import { FileCpuOpts } from "./types";
 
 export class FileActionsUtils {
     async getLastFile(path: string, maxFileSize: number, query: VQuery) {
@@ -48,15 +49,16 @@ export class FileActionsUtils {
 
     async operationUpdater(
         c_path: string,
-        worker: (file: string, config: VQuery, one: boolean) => Promise<boolean>,
+        worker: (file: string, config: VQuery, one: boolean, opts: FileCpuOpts) => Promise<DataInternal[]>,
         one: boolean,
-        config: VQuery
+        config: VQuery,
+        opts: FileCpuOpts
     ): Promise<DataInternal[]> {
         const files = await this.getSortedFiles(c_path, config);
 
         let update = [];
         for (const file of files) {
-            const updated = await worker(c_path + file, config, one);
+            const updated = await worker(c_path + file, config, one, opts);
             update.push(updated);
             if (one && updated) break;
         }

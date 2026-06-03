@@ -5,7 +5,6 @@ declare module "@wxn0brp/db-core/types/query" {
         dir?: {
             lastFileNum?: number;
             sortedFiles?: string[];
-            format?: Format;
         }
     }
 }
@@ -13,11 +12,19 @@ declare module "@wxn0brp/db-core/types/query" {
 export type DbDirOpts = Omit<DbOpts, "dbAction"> & {
     maxFileSize?: number;
     format?: string | Format;
+    delimiter?: string;
+    stringifyArgs?: any[];
 };
 
 export interface Format {
-    stringify: (data: any) => string;
-    parse: (data: string) => any;
+    stringify: (data: any, opts: DbDirOpts) => string;
+    parse: (data: string, opts: DbDirOpts) => any;
     init?: () => Promise<void>;
+    delimiter?: string;
     _extended?: boolean;
+}
+
+export interface FileCpuOpts {
+    format: Format;
+    opts: DbDirOpts;
 }

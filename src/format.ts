@@ -1,22 +1,25 @@
-import { Format } from "./types";
+import { DbDirOpts, Format } from "./types";
 
 let json5: typeof import("json5") | undefined;
+let yaml: typeof import("yaml") | undefined;
 
 export const format: Record<string, Format> = {
     json: {
         parse(data: string) {
             return JSON.parse(data);
         },
-        stringify(data: any) {
-            return JSON.stringify(data);
+        stringify(data: any, opts: DbDirOpts) {
+            const args = opts.stringifyArgs || [];
+            return JSON.stringify(data, ...args);
         }
     },
     json5: {
         parse(data: string) {
             return json5.parse(data);
         },
-        stringify(data: any) {
-            return json5.stringify(data);
+        stringify(data: any, opts: DbDirOpts) {
+            const args = opts.stringifyArgs || [];
+            return json5.stringify(data, ...args);
         },
         async init() {
             if (json5) return;
@@ -28,6 +31,24 @@ export const format: Record<string, Format> = {
             }
         }
     },
+    yaml: {
+        delimiter: "\n\n---\n\n",
+        parse(data: string) {
+            return yaml.parse(data);
+        },
+        stringify(data: any) {
+            return yaml.stringify(data);
+        },
+        async init() {
+            if (yaml) return;
+            // @ts-ignore
+            if (typeof Bun !== "undefined" && Bun?.YAML && !process?.env?.VALTHERA_DIR_DISABLE_BUN) yaml = Bun.YAML;
+            else {
+                const imp = await import("yaml");
+                yaml = imp.default;
+            }
+        }
+    },
 }
 
 export function extendJson(format: Format): Format {
@@ -36,12 +57,12 @@ export function extendJson(format: Format): Format {
     return {
         ...format,
         _extended: true,
-        parse(data: string) {
-            if (data[0] !== "{") return format.parse(`{${data}}`);
-            return format.parse(data);
+        parse(data: string, opts: DbDirOpts) {
+            if (data[0] !== "{") return format.parse(`{${data}}`, opts);
+            return format.parse(data, opts);
         },
-        stringify(data: any) {
-            return format.stringify(data).slice(1, -1);
+        stringify(data: any, opts: DbDirOpts) {
+            return format.stringify(data, opts).slice(1, -1);
         }
     }
 }

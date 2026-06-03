@@ -3,7 +3,7 @@ import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { vFileCpu } from "../src/file";
 import { format } from "../src/format";
-import { exists } from "../src/utils";
+import { FileCpuOpts } from "../src/types";
 
 const TEST_DIR = join(process.cwd(), "test_temp_file_cpu");
 const TEST_FILE = join(TEST_DIR, "test.db");
@@ -21,11 +21,14 @@ describe("file CPU operations", () => {
 
     function getControl() {
         return {
-            dir: {
-                format: format.json5,
-            }
+            dir: {}
         }
     }
+
+    const opts: FileCpuOpts = {
+        format: format.json5,
+        opts: {}
+    };
 
     describe("add", () => {
         it("1. should append data to file", async () => {
@@ -35,7 +38,7 @@ describe("file CPU operations", () => {
                 collection: "test",
                 data: { id: "1", name: "test" },
                 control: getControl(),
-            });
+            }, opts);
 
             const content = await Bun.file(TEST_FILE).text();
             expect(content.trim()).toContain("id:");
@@ -51,13 +54,13 @@ describe("file CPU operations", () => {
                 collection: "test",
                 data: { id: "1" },
                 control: getControl(),
-            });
+            }, opts);
 
             await vFileCpu.add(TEST_FILE, {
                 collection: "test",
                 data: { id: "2" },
                 control: getControl(),
-            });
+            }, opts);
 
             const content = await Bun.file(TEST_FILE).text();
             const lines = content.trim().split("\n");
@@ -76,7 +79,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results.length).toBe(3);
         });
@@ -87,7 +90,7 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results.length).toBe(1);
             expect(results[0].name).toBe("first");
@@ -99,7 +102,7 @@ describe("file CPU operations", () => {
                 search: (item: any) => item.id === "2",
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results.length).toBe(1);
             expect(results[0].id).toBe("2");
@@ -111,7 +114,7 @@ describe("file CPU operations", () => {
                 search: { id: "nonexistent" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results).toEqual([]);
         });
@@ -123,7 +126,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results).toEqual([]);
         });
@@ -136,7 +139,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results.length).toBe(2);
         });
@@ -153,7 +156,7 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(result).toBeTruthy();
             expect((result as any)?.name).toBe("first");
@@ -165,7 +168,7 @@ describe("file CPU operations", () => {
                 search: { id: "nonexistent" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(result).toBe(null);
         });
@@ -179,7 +182,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(result).toBe(null);
         });
@@ -192,7 +195,7 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect((result as any)?.name).toBe("first");
         });
@@ -210,7 +213,7 @@ describe("file CPU operations", () => {
                 updater: (item: any) => ({ ...item, updated: true }),
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(updated.length).toBe(3);
 
@@ -219,7 +222,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
             expect(results.every((item: any) => item.updated === true)).toBe(true);
         });
 
@@ -230,7 +233,7 @@ describe("file CPU operations", () => {
                 updater: (item: any) => ({ ...item, value: 999 }),
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(updated.length).toBe(1);
             expect(updated[0].value).toBe(999);
@@ -243,14 +246,14 @@ describe("file CPU operations", () => {
                 updater: { value: 500 },
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             const result = await vFileCpu.findOne(TEST_FILE, {
                 collection: "test",
                 search: { id: "1" },
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect((result as any)?.value).toBe(500);
         });
@@ -262,14 +265,14 @@ describe("file CPU operations", () => {
                 updater: (item: any) => ({ ...item, updated: true }),
                 context: {},
                 control: getControl(),
-            }, true);
+            }, true, opts);
 
             const results = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(results.filter((item: any) => item.updated === true).length).toBe(1);
         });
@@ -281,7 +284,7 @@ describe("file CPU operations", () => {
                 updater: (item: any) => ({ ...item, value: 999 }),
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(updated).toEqual([]);
         });
@@ -298,7 +301,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(removed.length).toBe(3);
 
@@ -307,7 +310,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
             expect(remaining.length).toBe(0);
         });
 
@@ -317,7 +320,7 @@ describe("file CPU operations", () => {
                 search: { id: "1" },
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(removed.length).toBe(1);
             expect(removed[0].id).toBe("1");
@@ -327,7 +330,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
             expect(remaining.length).toBe(2);
         });
 
@@ -337,14 +340,14 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            }, true);
+            }, true, opts);
 
             const remaining = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
             expect(remaining.length).toBe(2);
         });
 
@@ -354,7 +357,7 @@ describe("file CPU operations", () => {
                 search: { id: "nonexistent" },
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             expect(removed).toEqual([]);
 
@@ -363,7 +366,7 @@ describe("file CPU operations", () => {
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
             expect(remaining.length).toBe(3);
         });
 
@@ -373,14 +376,14 @@ describe("file CPU operations", () => {
                 search: { id: "2" },
                 context: {},
                 control: getControl(),
-            }, false);
+            }, false, opts);
 
             const remaining = await vFileCpu.find(TEST_FILE, {
                 collection: "test",
                 search: {},
                 context: {},
                 control: getControl(),
-            });
+            }, opts);
 
             expect(remaining.some((item: any) => item.id === "1")).toBe(true);
             expect(remaining.some((item: any) => item.id === "3")).toBe(true);

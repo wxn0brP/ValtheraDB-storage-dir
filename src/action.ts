@@ -6,7 +6,7 @@ import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
-import { DbDirOpts, Format } from "./types";
+import { DbDirOpts, FileCpuOpts, Format } from "./types";
 import { exists } from "./utils";
 import { extendJson, format } from "./format";
 import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
@@ -16,6 +16,7 @@ export class FileActions extends ActionsBase {
     options: DbDirOpts;
     _inited = false;
     format: Format;
+    fileCpuOpts: FileCpuOpts;
 
     /**
      * Creates a new instance of FileActions.
@@ -49,6 +50,13 @@ export class FileActions extends ActionsBase {
             } else {
                 throw new Error(`Unknown format: ${this.options.format}`);
             }
+        } else {
+            this.format = this.options.format as Format;
+        }
+
+        this.fileCpuOpts = {
+            format: this.format,
+            opts: this.options
         }
     }
 
@@ -65,7 +73,6 @@ export class FileActions extends ActionsBase {
     _ensureQueryFormat(query: VQuery) {
         query.control ||= {};
         query.control.dir ||= {};
-        query.control.dir.format ||= this.format;
     }
 
     /**
@@ -121,7 +128,7 @@ export class FileActions extends ActionsBase {
         const file = c_path + await this.utils.getLastFile(c_path, this.options.maxFileSize, query);
 
         await addId(query, this);
-        await this.fileCpu.add(file, query);
+        await this.fileCpu.add(file, query, this.fileCpuOpts);
         return data;
     }
 
@@ -137,7 +144,7 @@ export class FileActions extends ActionsBase {
         if (files.length == 0) return [];
 
         files = files.map(file => c_path + file);
-        const data = await findUtil(query, this.fileCpu, files);
+        const data = await findUtil(query, this.fileCpu, files, this.fileCpuOpts);
         return data || [];
     }
 
@@ -153,7 +160,7 @@ export class FileActions extends ActionsBase {
         const files = await this.utils.getSortedFiles(c_path, query);
 
         for (let f of files) {
-            let data = await this.fileCpu.findOne(c_path + f, query) as Data;
+            let data = await this.fileCpu.findOne(c_path + f, query, this.fileCpuOpts) as Data;
             if (data) return data;
         }
         return null;
@@ -172,7 +179,8 @@ export class FileActions extends ActionsBase {
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
             false,
-            query
+            query,
+            this.fileCpuOpts
         )
     }
 
@@ -189,7 +197,8 @@ export class FileActions extends ActionsBase {
             this._getCollectionPath(collection),
             this.fileCpu.update.bind(this.fileCpu),
             true,
-            query
+            query,
+            this.fileCpuOpts
         );
 
         return res[0] ?? null;
@@ -208,7 +217,8 @@ export class FileActions extends ActionsBase {
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
             false,
-            query
+            query,
+            this.fileCpuOpts
         )
     }
 
@@ -225,7 +235,8 @@ export class FileActions extends ActionsBase {
             this._getCollectionPath(collection),
             this.fileCpu.remove.bind(this.fileCpu),
             true,
-            query
+            query,
+            this.fileCpuOpts
         );
 
         return res[0] ?? null;

@@ -127,7 +127,7 @@ describe("action.utils.ts", () => {
             };
 
             const query = { control: {}, context: {}, search: {} } as any;
-            await utils.operationUpdater(TEST_DIR, mockWorker, false, query);
+            await utils.operationUpdater(TEST_DIR, mockWorker, false, query, { format: { delimiter: "\n" } } as any);
 
             expect(callOrder.length).toBe(2);
             expect(callOrder[0]).toContain("1.db");
@@ -145,7 +145,7 @@ describe("action.utils.ts", () => {
             };
 
             const query = { control: {}, context: {}, search: {} } as any;
-            await utils.operationUpdater(TEST_DIR, mockWorker, true, query);
+            await utils.operationUpdater(TEST_DIR, mockWorker, true, query, { format: { delimiter: "\n" } } as any);
 
             expect(callOrder.length).toBe(1);
             expect(callOrder[0]).toContain("1.db");
@@ -162,7 +162,7 @@ describe("action.utils.ts", () => {
             };
 
             const query = { control: {}, context: {}, search: {} } as any;
-            await utils.operationUpdater(TEST_DIR, mockWorker, false, query);
+            await utils.operationUpdater(TEST_DIR, mockWorker, false, query, { format: { delimiter: "\n" } } as any);
 
             expect(callOrder.length).toBe(2);
         });
@@ -173,7 +173,7 @@ describe("action.utils.ts", () => {
             };
 
             const query = { control: {}, context: {}, search: {} } as any;
-            const result = await utils.operationUpdater(TEST_DIR, mockWorker, false, query);
+            const result = await utils.operationUpdater(TEST_DIR, mockWorker, false, query, { format: { delimiter: "\n" } } as any);
             expect(Array.isArray(result)).toBe(true);
         });
     });

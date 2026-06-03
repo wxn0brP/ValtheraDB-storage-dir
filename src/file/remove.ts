@@ -2,10 +2,11 @@ import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { matchObj } from "@wxn0brp/db-core/utils/process";
 import { createWriteStream, promises } from "fs";
+import { FileCpuOpts } from "../types";
 import { exists } from "../utils";
-import { createRL } from "./utils";
+import { createRL, getDelimiter } from "./utils";
 
-export async function remove(file: string, config: VQueryT.Remove, one: boolean) {
+export async function remove(file: string, config: VQueryT.Remove, one: boolean, opts: FileCpuOpts) {
     file = pathRepair(file);
 
     if (!await exists(file)) return [];
@@ -13,29 +14,31 @@ export async function remove(file: string, config: VQueryT.Remove, one: boolean)
     const tmpFile = file + ".tmp";
     await promises.writeFile(tmpFile, "");
 
-    const rl = createRL(file);
+    const delimiter = getDelimiter(opts);
+
+    const rl = createRL(file, delimiter);
     const ws = createWriteStream(tmpFile, { flags: "a" });
 
     let removed = [];
-    for await (let line of rl) {
-        if (!line) continue;
-        const trimmed = line.trim();
+    for await (let block of rl) {
+        if (!block) continue;
+        const trimmed = block.trim();
 
         if (one && removed.length) {
             ws.write(trimmed);
-            ws.write("\n");
+            ws.write(delimiter);
             continue;
         }
         if (!trimmed) continue;
 
-        const data = config.control.dir.format.parse(trimmed);
+        const data = opts.format.parse(trimmed, opts.opts);
         if (matchObj(config, data)) {
             removed.push(data);
             continue;
         }
 
         ws.write(trimmed);
-        ws.write("\n");
+        ws.write(delimiter);
     }
 
     rl.close();

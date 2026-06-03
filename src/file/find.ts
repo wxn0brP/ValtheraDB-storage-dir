@@ -1,10 +1,11 @@
 import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { findObj } from "@wxn0brp/db-core/utils/process";
+import { FileCpuOpts } from "../types";
 import { exists } from "../utils";
-import { createRL } from "./utils";
+import { createRL, getDelimiter } from "./utils";
 
-export async function find(file: string, config: VQueryT.Find): Promise<any[]> {
+export async function find(file: string, config: VQueryT.Find, opts: FileCpuOpts): Promise<any[]> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!await exists(file)) {
@@ -12,14 +13,15 @@ export async function find(file: string, config: VQueryT.Find): Promise<any[]> {
             return;
         }
 
-        const rl = createRL(file);
+        const delimiter = getDelimiter(opts);
+        const rl = createRL(file, delimiter);
         const results = [];
-        for await (const line of rl) {
-            if (!line) continue;
-            const trimmed = line.trim();
+        for await (const block of rl) {
+            if (!block) continue;
+            const trimmed = block.trim();
             if (!trimmed) continue;
 
-            const res = findObj(config, config.control.dir.format.parse(line));
+            const res = findObj(config, opts.format.parse(block, opts.opts));
             if (res) results.push(res);
         };
         resolve(results);
@@ -27,7 +29,7 @@ export async function find(file: string, config: VQueryT.Find): Promise<any[]> {
     })
 }
 
-export async function findOne(file: string, config: VQueryT.FindOne): Promise<any | null> {
+export async function findOne(file: string, config: VQueryT.FindOne, opts: FileCpuOpts): Promise<any | null> {
     file = pathRepair(file);
     return await new Promise(async (resolve) => {
         if (!await exists(file)) {
@@ -35,13 +37,14 @@ export async function findOne(file: string, config: VQueryT.FindOne): Promise<an
             return;
         }
 
-        const rl = createRL(file);
-        for await (const line of rl) {
-            if (!line) continue;
-            const trimmed = line.trim();
+        const delimiter = getDelimiter(opts);
+        const rl = createRL(file, delimiter);
+        for await (const block of rl) {
+            if (!block) continue;
+            const trimmed = block.trim();
             if (!trimmed) continue;
 
-            const res = findObj(config, config.control.dir.format.parse(line));
+            const res = findObj(config, opts.format.parse(block, opts.opts));
             if (res) {
                 resolve(res);
                 rl.close();
