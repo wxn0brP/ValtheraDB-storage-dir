@@ -1,4 +1,4 @@
-import { FindOneQuery } from "@wxn0brp/db-core/types/query";
+import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { existsSync, promises as fsPromises, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { findOne } from "../src/file/find";
@@ -93,21 +93,22 @@ async function runBenchmark(format: Format, formatName: string) {
             if (current.rss > peakRSS) peakRSS = current.rss;
         }, 50);
 
-        const queryConfig: FindOneQuery = {
+        const queryConfig: VQueryT.FindOne = {
             collection: "large_data",
             search: {
                 id: query.search.id
             },
             context: {},
             control: {
-                dir: {
-                    format
-                }
+                dir: {}
             },
             findOpts: {},
         }
 
-        const result = await findOne(DATA_FILE, queryConfig);
+        const result = await findOne(DATA_FILE, queryConfig, {
+            format,
+            opts: {}
+        });
 
         clearInterval(memInterval);
 
