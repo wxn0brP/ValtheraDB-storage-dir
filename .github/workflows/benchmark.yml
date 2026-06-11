@@ -41,19 +41,19 @@ jobs:
           bun run benchmark/find.js benchmark_bun_js
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark_bun_ts
           path: benchmark_bun_ts.json
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark_bun_js
           path: benchmark_bun_js.json
 
       - name: Upload built benchmark file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-built-file
           path: benchmark/find.js
@@ -87,7 +87,7 @@ jobs:
           node benchmark/find.js "$fileName"
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark_node_${{ matrix.node-version }}_ubuntu
           path: benchmark_node_${{ matrix.node-version }}_ubuntu.json
@@ -113,7 +113,7 @@ jobs:
           node benchmark/find.js benchmark_node_24_windows
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark_node_24_windows
           path: benchmark_node_24_windows.json
