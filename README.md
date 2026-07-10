@@ -21,17 +21,17 @@ npm install json5 yaml
 
 ### JSON5
 
-`json5`: Standard JSON5 format.
-`json5:x`: Without `{}`
+- `json5`: Standard JSON5 format.
+- `json5:x`: Without `{}`
 
 ### JSON
 
-`json`: Standard JSON format.
-`json:x`: Without `{}`
+- `json`: Standard JSON format.
+- `json:x`: Without `{}`
 
 ### YAML
 
-`yaml`: Standard YAML format.
+- `yaml`: Standard YAML format.
 
 ## Usage
 
@@ -42,10 +42,6 @@ const actions = createFileActions("dir", {
     format: "json5:x",
 })
 ```
-
-## Benchmark
-
-Performance benchmarks are available on the [`benchmark`](https://github.com/wxn0brP/ValtheraDB-storage-dir/tree/benchmark) branch.
 
 ## License
 
