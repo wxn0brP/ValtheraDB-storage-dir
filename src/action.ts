@@ -35,7 +35,7 @@ export class FileActions extends ActionsBase {
         this.folder = folder;
         this.options = {
             maxFileSize: 2 * 1024 * 1024, //2 MB
-            format: "json",
+            format: "json5:x",
             ...options,
         };
 
