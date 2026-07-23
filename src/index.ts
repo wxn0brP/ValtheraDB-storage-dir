@@ -5,9 +5,9 @@ export * from "./action";
 export * from "./file";
 
 export function createFileActions(folder: string, options: DbDirOpts = {}) {
-    return new FileActions(folder, options, vFileCpu);
+	return new FileActions(folder, options, vFileCpu);
 }
 
 export const DYNAMIC = {
-    dir: createFileActions
-}
+	dir: createFileActions,
+};

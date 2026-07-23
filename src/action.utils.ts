@@ -5,63 +5,72 @@ import { DataInternal } from "@wxn0brp/db-core/types/data";
 import { FileCpuOpts } from "./types";
 
 export class FileActionsUtils {
-    async getLastFile(path: string, maxFileSize: number, query: VQuery) {
-        if (!await exists(path))
-            await mkdir(path, { recursive: true });
-        const files = await this.getSortedFiles(path, query);
+	async getLastFile(path: string, maxFileSize: number, query: VQuery) {
+		if (!(await exists(path)))
+			await mkdir(path, {
+				recursive: true,
+			});
+		const files = await this.getSortedFiles(path, query);
 
-        if (files.length == 0) {
-            await writeFile(path + "/1.db", "");
-            return "1.db";
-        }
+		if (files.length === 0) {
+			await writeFile(path + "/1.db", "");
+			return "1.db";
+		}
 
-        const last = files[files.length - 1];
-        const info = path + "/" + last;
+		const last = files[files.length - 1];
+		const info = path + "/" + last;
 
-        if ((await stat(info)).size < maxFileSize) return last;
+		if ((await stat(info)).size < maxFileSize) return last;
 
-        const num = parseInt(last.replace(".db", ""), 10) + 1;
-        await writeFile(path + "/" + num + ".db", "");
-        query.control ||= {} as any;
-        query.control.dir ||= {};
-        query.control.dir.lastFileNum = num;
-        return num + ".db";
-    }
+		const num = parseInt(last.replace(".db", ""), 10) + 1;
+		await writeFile(path + "/" + num + ".db", "");
+		query.control ||= {} as any;
+		query.control.dir ||= {};
+		query.control.dir.lastFileNum = num;
+		return num + ".db";
+	}
 
-    async getSortedFiles(folder: string, query: VQuery): Promise<string[]> {
-        const files = await readdir(folder, { withFileTypes: true });
+	async getSortedFiles(folder: string, query: VQuery): Promise<string[]> {
+		const files = await readdir(folder, {
+			withFileTypes: true,
+		});
 
-        const sorted = files
-            .filter(file => file.isFile() && !file.name.endsWith(".tmp"))
-            .map(file => file.name)
-            .filter(name => /^\d+\.db$/.test(name))
-            .sort((a, b) => {
-                const numA = parseInt(a, 10);
-                const numB = parseInt(b, 10);
-                return numA - numB;
-            });
+		const sorted = files
+			.filter(file => file.isFile() && !file.name.endsWith(".tmp"))
+			.map(file => file.name)
+			.filter(name => /^\d+\.db$/.test(name))
+			.sort((a, b) => {
+				const numA = parseInt(a, 10);
+				const numB = parseInt(b, 10);
+				return numA - numB;
+			});
 
-        query.control ||= {} as any;
-        query.control.dir ||= {};
-        query.control.dir.sortedFiles = sorted;
-        return sorted;
-    }
+		query.control ||= {} as any;
+		query.control.dir ||= {};
+		query.control.dir.sortedFiles = sorted;
+		return sorted;
+	}
 
-    async operationUpdater(
-        c_path: string,
-        worker: (file: string, config: VQuery, one: boolean, opts: FileCpuOpts) => Promise<DataInternal[]>,
-        one: boolean,
-        config: VQuery,
-        opts: FileCpuOpts
-    ): Promise<DataInternal[]> {
-        const files = await this.getSortedFiles(c_path, config);
+	async operationUpdater(
+		c_path: string,
+		worker: (
+			file: string,
+			config: VQuery,
+			one: boolean,
+			opts: FileCpuOpts,
+		) => Promise<DataInternal[]>,
+		one: boolean,
+		config: VQuery,
+		opts: FileCpuOpts,
+	): Promise<DataInternal[]> {
+		const files = await this.getSortedFiles(c_path, config);
 
-        let update = [];
-        for (const file of files) {
-            const updated = await worker(c_path + file, config, one, opts);
-            update.push(updated);
-            if (one && updated) break;
-        }
-        return update.flat();
-    }
+		const update = [];
+		for (const file of files) {
+			const updated = await worker(c_path + file, config, one, opts);
+			update.push(updated);
+			if (one && updated) break;
+		}
+		return update.flat();
+	}
 }

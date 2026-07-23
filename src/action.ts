@@ -12,241 +12,257 @@ import { extendJson, format } from "./format";
 import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
 
 export class FileActions extends ActionsBase {
-    folder: string;
-    options: DbDirOpts;
-    _inited = false;
-    format: Format;
-    fileCpuOpts: FileCpuOpts;
+	folder: string;
+	options: DbDirOpts;
+	_inited = false;
+	format: Format;
+	fileCpuOpts: FileCpuOpts;
 
-    /**
-     * Creates a new instance of FileActions.
-     * @param folder - The folder where database files are stored.
-     * @param options - The options object.
-     * @param fileCpu - The file cpu instance
-     * @param utils - The utils instance
-     */
-    constructor(
-        folder: string,
-        options: DbDirOpts,
-        public fileCpu: FileCpu,
-        public utils = new FileActionsUtils(),
-    ) {
-        super();
-        this.folder = folder;
-        this.options = {
-            maxFileSize: 2 * 1024 * 1024, //2 MB
-            format: "json5:x",
-            ...options,
-        };
+	/**
+	 * Creates a new instance of FileActions.
+	 * @param folder - The folder where database files are stored.
+	 * @param options - The options object.
+	 * @param fileCpu - The file cpu instance
+	 * @param utils - The utils instance
+	 */
+	constructor(
+		folder: string,
+		options: DbDirOpts,
+		public fileCpu: FileCpu,
+		public utils = new FileActionsUtils(),
+	) {
+		super();
+		this.folder = folder;
+		this.options = {
+			maxFileSize: 2 * 1024 * 1024, //2 MB
+			format: "json5:x",
+			...options,
+		};
 
-        if (typeof this.options.format === "string") {
-            const [name, x] = this.options.format.split(":");
-            if (format[name]) {
-                if (x)
-                    this.format = extendJson(format[name]);
-                else
-                    this.format = { ...format[name] };
+		if (typeof this.options.format === "string") {
+			const [name, x] = this.options.format.split(":");
+			if (format[name]) {
+				if (x) this.format = extendJson(format[name]);
+				else
+					this.format = {
+						...format[name],
+					};
+			} else {
+				throw new Error(`Unknown format: ${this.options.format}`);
+			}
+		} else {
+			this.format = this.options.format as Format;
+		}
 
-            } else {
-                throw new Error(`Unknown format: ${this.options.format}`);
-            }
-        } else {
-            this.format = this.options.format as Format;
-        }
+		this.fileCpuOpts = {
+			format: this.format,
+			opts: this.options,
+		};
+	}
 
-        this.fileCpuOpts = {
-            format: this.format,
-            opts: this.options
-        }
-    }
+	async init() {
+		if (!(await exists(this.folder)))
+			await promises.mkdir(this.folder, {
+				recursive: true,
+			});
+		await this.format?.init?.();
+	}
 
-    async init() {
-        if (!await exists(this.folder))
-            await promises.mkdir(this.folder, { recursive: true });
-        await this.format?.init?.();
-    }
+	_getCollectionPath(collection: string) {
+		return this.folder + "/" + collection + "/";
+	}
 
-    _getCollectionPath(collection: string) {
-        return this.folder + "/" + collection + "/";
-    }
+	_ensureQueryFormat(query: VQuery) {
+		query.control ||= {};
+		query.control.dir ||= {};
+	}
 
-    _ensureQueryFormat(query: VQuery) {
-        query.control ||= {};
-        query.control.dir ||= {};
-    }
+	/**
+	 * Get a list of available databases in the specified folder.
+	 */
+	async getCollections() {
+		const allCollections = await promises.readdir(this.folder, {
+			recursive: true,
+			withFileTypes: true,
+		});
+		const collections = allCollections
+			.filter(dirent => dirent.isDirectory())
+			.map(dirent => {
+				const parentPath = resolve(dirent.parentPath);
+				const baseFolder = resolve(this.folder);
 
-    /**
-     * Get a list of available databases in the specified folder.
-     */
-    async getCollections() {
-        const allCollections = await promises.readdir(this.folder, { recursive: true, withFileTypes: true });
-        const collections = allCollections
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => {
-                const parentPath = resolve(dirent.parentPath);
-                const baseFolder = resolve(this.folder);
+				if (parentPath === baseFolder) return dirent.name;
+				return parentPath.replace(baseFolder + sep, "") + "/" + dirent.name;
+			});
 
-                if (parentPath === baseFolder) return dirent.name;
-                return parentPath.replace(baseFolder + sep, "") + "/" + dirent.name;
-            });
+		return collections;
+	}
 
-        return collections;
-    }
+	/**
+	 * Check and create the specified collection if it doesn't exist.
+	 */
+	async ensureCollection(collection: string) {
+		if (await this.issetCollection(collection)) return false;
+		const c_path = this._getCollectionPath(collection);
+		await promises.mkdir(c_path, {
+			recursive: true,
+		});
+		return true;
+	}
 
-    /**
-     * Check and create the specified collection if it doesn't exist.
-     */
-    async ensureCollection(collection: string) {
-        if (await this.issetCollection(collection)) return false;
-        const c_path = this._getCollectionPath(collection);
-        await promises.mkdir(c_path, { recursive: true });
-        return true;
-    }
+	/**
+	 * Check if a collection exists.
+	 */
+	async issetCollection(collection: string) {
+		const path = this._getCollectionPath(collection);
+		try {
+			await promises.access(path);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
-    /**
-     * Check if a collection exists.
-     */
-    async issetCollection(collection: string) {
-        const path = this._getCollectionPath(collection);
-        try {
-            await promises.access(path);
-            return true;
-        } catch {
-            return false;
-        }
-    }
+	/**
+	 * Add a new entry to the specified database.
+	 */
+	async add(query: VQueryT.Add) {
+		const { collection, data } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Add a new entry to the specified database.
-     */
-    async add(query: VQueryT.Add) {
-        const { collection, data } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(collection);
+		const c_path = this._getCollectionPath(collection);
+		const file =
+			c_path +
+			(await this.utils.getLastFile(c_path, this.options.maxFileSize, query));
 
-        await this.ensureCollection(collection);
-        const c_path = this._getCollectionPath(collection);
-        const file = c_path + await this.utils.getLastFile(c_path, this.options.maxFileSize, query);
+		await addId(query, this);
+		await this.fileCpu.add(file, query, this.fileCpuOpts);
+		return data;
+	}
 
-        await addId(query, this);
-        await this.fileCpu.add(file, query, this.fileCpuOpts);
-        return data;
-    }
+	/**
+	 * Find entries in the specified database based on search criteria.
+	 */
+	async find(query: VQueryT.Find) {
+		await this.ensureCollection(query.collection);
+		this._ensureQueryFormat(query);
 
-    /**
-     * Find entries in the specified database based on search criteria.
-     */
-    async find(query: VQueryT.Find) {
-        await this.ensureCollection(query.collection);
-        this._ensureQueryFormat(query);
+		const c_path = this._getCollectionPath(query.collection);
+		let files = await this.utils.getSortedFiles(c_path, query);
+		if (files.length === 0) return [];
 
-        const c_path = this._getCollectionPath(query.collection);
-        let files = await this.utils.getSortedFiles(c_path, query);
-        if (files.length == 0) return [];
+		files = files.map(file => c_path + file);
+		const data = await findUtil(query, this.fileCpu, files, this.fileCpuOpts);
+		return data || [];
+	}
 
-        files = files.map(file => c_path + file);
-        const data = await findUtil(query, this.fileCpu, files, this.fileCpuOpts);
-        return data || [];
-    }
+	/**
+	 * Find the first matching entry in the specified database based on search criteria.
+	 */
+	async findOne(query: VQueryT.FindOne) {
+		const { collection } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Find the first matching entry in the specified database based on search criteria.
-     */
-    async findOne(query: VQueryT.FindOne) {
-        const { collection } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(collection);
+		const c_path = this._getCollectionPath(collection);
+		const files = await this.utils.getSortedFiles(c_path, query);
 
-        await this.ensureCollection(collection);
-        const c_path = this._getCollectionPath(collection);
-        const files = await this.utils.getSortedFiles(c_path, query);
+		for (const f of files) {
+			const data = (await this.fileCpu.findOne(
+				c_path + f,
+				query,
+				this.fileCpuOpts,
+			)) as Data;
+			if (data) return data;
+		}
+		return null;
+	}
 
-        for (let f of files) {
-            let data = await this.fileCpu.findOne(c_path + f, query, this.fileCpuOpts) as Data;
-            if (data) return data;
-        }
-        return null;
-    }
+	/**
+	 * Update entries in the specified database based on search criteria and an updater function or object.
+	 */
+	async update(query: VQueryT.Update) {
+		const { collection } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Update entries in the specified database based on search criteria and an updater function or object.
-     */
-    async update(query: VQueryT.Update) {
-        const { collection } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(collection);
 
-        await this.ensureCollection(collection);
+		return await this.utils.operationUpdater(
+			this._getCollectionPath(collection),
+			this.fileCpu.update.bind(this.fileCpu),
+			false,
+			query,
+			this.fileCpuOpts,
+		);
+	}
 
-        return await this.utils.operationUpdater(
-            this._getCollectionPath(collection),
-            this.fileCpu.update.bind(this.fileCpu),
-            false,
-            query,
-            this.fileCpuOpts
-        )
-    }
+	/**
+	 * Update the first matching entry in the specified database based on search criteria and an updater function or object.
+	 */
+	async updateOne(query: VQueryT.Update) {
+		const { collection } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Update the first matching entry in the specified database based on search criteria and an updater function or object.
-     */
-    async updateOne(query: VQueryT.Update) {
-        const { collection } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(collection);
 
-        await this.ensureCollection(collection);
+		const res = await this.utils.operationUpdater(
+			this._getCollectionPath(collection),
+			this.fileCpu.update.bind(this.fileCpu),
+			true,
+			query,
+			this.fileCpuOpts,
+		);
 
-        const res = await this.utils.operationUpdater(
-            this._getCollectionPath(collection),
-            this.fileCpu.update.bind(this.fileCpu),
-            true,
-            query,
-            this.fileCpuOpts
-        );
+		return res[0] ?? null;
+	}
 
-        return res[0] ?? null;
-    }
+	/**
+	 * Remove entries from the specified database based on search criteria.
+	 */
+	async remove(query: VQueryT.Remove) {
+		const { collection } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Remove entries from the specified database based on search criteria.
-     */
-    async remove(query: VQueryT.Remove) {
-        const { collection } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(query.collection);
 
-        await this.ensureCollection(query.collection);
+		return await this.utils.operationUpdater(
+			this._getCollectionPath(collection),
+			this.fileCpu.remove.bind(this.fileCpu),
+			false,
+			query,
+			this.fileCpuOpts,
+		);
+	}
 
-        return await this.utils.operationUpdater(
-            this._getCollectionPath(collection),
-            this.fileCpu.remove.bind(this.fileCpu),
-            false,
-            query,
-            this.fileCpuOpts
-        )
-    }
+	/**
+	 * Remove the first matching entry from the specified database based on search criteria.
+	 */
+	async removeOne(query: VQueryT.Remove) {
+		const { collection } = query;
+		this._ensureQueryFormat(query);
 
-    /**
-     * Remove the first matching entry from the specified database based on search criteria.
-     */
-    async removeOne(query: VQueryT.Remove) {
-        const { collection } = query;
-        this._ensureQueryFormat(query);
+		await this.ensureCollection(query.collection);
 
-        await this.ensureCollection(query.collection);
+		const res = await this.utils.operationUpdater(
+			this._getCollectionPath(collection),
+			this.fileCpu.remove.bind(this.fileCpu),
+			true,
+			query,
+			this.fileCpuOpts,
+		);
 
-        const res = await this.utils.operationUpdater(
-            this._getCollectionPath(collection),
-            this.fileCpu.remove.bind(this.fileCpu),
-            true,
-            query,
-            this.fileCpuOpts
-        );
+		return res[0] ?? null;
+	}
 
-        return res[0] ?? null;
-    }
-
-    /**
-     * Removes a database collection from the file system.
-     */
-    async removeCollection(collection: string) {
-        await promises.rm(this.folder + "/" + collection, { recursive: true, force: true });
-        return true;
-    }
+	/**
+	 * Removes a database collection from the file system.
+	 */
+	async removeCollection(collection: string) {
+		await promises.rm(this.folder + "/" + collection, {
+			recursive: true,
+			force: true,
+		});
+		return true;
+	}
 }

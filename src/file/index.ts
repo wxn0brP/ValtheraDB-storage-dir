@@ -8,12 +8,12 @@ import { update } from "./update";
 import { getDelimiter } from "./utils";
 
 export const vFileCpu: FileCpu = {
-    add: async (file: string, config: VQueryT.Add, opts: FileCpuOpts) => {
-        const dataString = opts.format.stringify(config.data, opts);
-        await appendFile(file, dataString + getDelimiter(opts));
-    },
-    find,
-    findOne,
-    update,
-    remove,
-}
+	add: async (file: string, config: VQueryT.Add, opts: FileCpuOpts) => {
+		const dataString = opts.format.stringify(config.data, opts);
+		await appendFile(file, dataString + getDelimiter(opts));
+	},
+	find,
+	findOne,
+	update,
+	remove,
+};
