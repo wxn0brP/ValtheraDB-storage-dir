@@ -9,7 +9,7 @@ declare module "@wxn0brp/db-core/types/query" {
 	}
 }
 
-export type DbDirOpts = Omit<DbOpts, "dbAction"> & {
+export type DbDirOpts = Omit<DbOpts, "adapter"> & {
 	maxFileSize?: number;
 	format?: string | Format;
 	delimiter?: string;
