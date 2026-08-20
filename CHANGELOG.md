@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.120.0](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.111.2...v0.120.0) (2026-08-20)
+
+
+### Features
+
+* bump deps ([7e33ac8](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/7e33ac808fc4ee6e0c1347f1487cff75c6e2237a))
+
 ### [0.111.2](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.111.1...v0.111.2) (2026-07-10)
 
 ### [0.111.1](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.111.0...v0.111.1) (2026-07-10)
