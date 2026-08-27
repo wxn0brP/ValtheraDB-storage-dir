@@ -2,14 +2,15 @@ import { ActionsBase } from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
+import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
+import { extendJson, format } from "./format";
 import { DbDirOpts, FileCpuOpts, Format } from "./types";
 import { exists } from "./utils";
-import { extendJson, format } from "./format";
-import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
+import { version } from "./version";
 
 export class FileActions extends ActionsBase {
 	folder: string;
@@ -17,6 +18,7 @@ export class FileActions extends ActionsBase {
 	_inited = false;
 	format: Format;
 	fileCpuOpts: FileCpuOpts;
+	version = version;
 
 	/**
 	 * Creates a new instance of FileActions.
