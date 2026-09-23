@@ -3,11 +3,11 @@ import { addId } from "@wxn0brp/db-core/helpers/addId";
 import { Id } from "@wxn0brp/db-core/types/Id";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
-import { TransactionHandle } from "@wxn0brp/db-core/types/transaction";
 import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
+import { TransactionHandle } from "@wxn0brp/db-core/types/transaction";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
-import { resolve, sep } from "path";
+import { join, resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
 import { extendJson, format } from "./format";
 import { DirJournal } from "./journal";
@@ -130,7 +130,7 @@ export class FileActions extends ActionsBase {
 				const baseFolder = resolve(this.folder);
 
 				if (parentPath === baseFolder) return dirent.name;
-				return parentPath.replace(baseFolder + sep, "") + "/" + dirent.name;
+				return join(parentPath.replace(baseFolder + sep, ""), dirent.name);
 			});
 
 		return collections;
@@ -159,6 +159,7 @@ export class FileActions extends ActionsBase {
 	 */
 	async issetCollection(collection: string) {
 		const path = this._getCollectionPath(collection);
+		if (this.journal.hasMkdir(path)) return true;
 		try {
 			await promises.access(path);
 			return true;
@@ -203,7 +204,7 @@ export class FileActions extends ActionsBase {
 		this._ensureQueryFormat(query);
 
 		const c_path = this._getCollectionPath(query.collection);
-		let files = await this.utils.getSortedFiles(c_path, query);
+		let files = await this.utils.getSortedFiles(c_path, query, this._getOpts());
 		if (files.length === 0) return [];
 
 		files = files.map(file => c_path + file);
@@ -221,7 +222,11 @@ export class FileActions extends ActionsBase {
 
 		await this.ensureCollection(collection);
 		const c_path = this._getCollectionPath(collection);
-		const files = await this.utils.getSortedFiles(c_path, query);
+		const files = await this.utils.getSortedFiles(
+			c_path,
+			query,
+			this._getOpts(),
+		);
 
 		for (const f of files) {
 			const data = (await this.fileCpu.findOne(
@@ -318,7 +323,7 @@ export class FileActions extends ActionsBase {
 	 * Removes a database collection from the file system.
 	 */
 	async removeCollection(collection: string) {
-		await promises.rm(this.folder + "/" + collection, {
+		await promises.rm(join(this.folder, collection), {
 			recursive: true,
 			force: true,
 		});

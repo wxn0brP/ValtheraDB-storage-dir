@@ -64,6 +64,24 @@ export class DirJournal {
 	}
 
 	/**
+	 * Get all staged files for a given folder.
+	 * Returns array of original filenames (not staging paths).
+	 */
+	getStagedFiles(folder: string) {
+		if (!this.active) return [];
+		const stagedFiles: string[] = [];
+		for (const originalPath of this.files.keys()) {
+			if (originalPath.startsWith(folder)) {
+				const filename = originalPath.slice(folder.length);
+				if (filename && !filename.includes("/")) {
+					stagedFiles.push(filename);
+				}
+			}
+		}
+		return stagedFiles;
+	}
+
+	/**
 	 * Buffer a mkdir operation.
 	 */
 	bufferMkdir(path: string) {
