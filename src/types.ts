@@ -1,5 +1,5 @@
 import { DbOpts } from "@wxn0brp/db-core/types/options";
-
+import { DirJournal } from "./journal";
 declare module "@wxn0brp/db-core/types/query" {
 	export interface VQuery_Control {
 		dir?: {
@@ -27,4 +27,5 @@ export interface Format {
 export interface FileCpuOpts {
 	format: Format;
 	opts: DbDirOpts;
+	journal?: DirJournal;
 }

@@ -1,13 +1,16 @@
 import { ActionsBase } from "@wxn0brp/db-core/base/actions";
 import { addId } from "@wxn0brp/db-core/helpers/addId";
+import { Id } from "@wxn0brp/db-core/types/Id";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
+import { TransactionHandle } from "@wxn0brp/db-core/types/transaction";
 import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
 import { findUtil } from "@wxn0brp/db-core/utils/action";
 import { promises } from "fs";
 import { resolve, sep } from "path";
 import { FileActionsUtils } from "./action.utils";
 import { extendJson, format } from "./format";
+import { DirJournal } from "./journal";
 import { DbDirOpts, FileCpuOpts, Format } from "./types";
 import { exists } from "./utils";
 import { version } from "./version";
@@ -18,6 +21,8 @@ export class FileActions extends ActionsBase {
 	_inited = false;
 	format: Format;
 	fileCpuOpts: FileCpuOpts;
+	journal: DirJournal;
+	activeTx: TransactionHandle = null;
 	version = version;
 
 	/**
@@ -35,6 +40,7 @@ export class FileActions extends ActionsBase {
 	) {
 		super();
 		this.folder = folder;
+		this.journal = new DirJournal(folder);
 		this.options = {
 			maxFileSize: 2 * 1024 * 1024, //2 MB
 			format: "json5:x",
@@ -67,6 +73,7 @@ export class FileActions extends ActionsBase {
 			await promises.mkdir(this.folder, {
 				recursive: true,
 			});
+		await this.journal.cleanupStaging();
 		await this.format?.init?.();
 	}
 
@@ -77,6 +84,35 @@ export class FileActions extends ActionsBase {
 	_ensureQueryFormat(query: VQuery) {
 		query.control ||= {};
 		query.control.dir ||= {};
+	}
+
+	/**
+	 * Validate transaction handle.
+	 * If transaction is active, query must have matching transaction handle.
+	 * If no transaction is active, query must not have transaction handle.
+	 * If journal is poisoned, reject all operations.
+	 */
+	_validateTransaction(query: VQuery) {
+		if (this.journal.isPoisoned()) {
+			throw new Error(
+				"journal is poisoned from previous failed commit, cannot perform operations",
+			);
+		}
+		const txHandle = query.transaction;
+		if (this.activeTx) {
+			if (!txHandle || txHandle.id !== this.activeTx.id) {
+				throw new Error(
+					"transaction is active but operation has no or mismatched handle",
+				);
+			}
+		}
+	}
+
+	_getOpts(): FileCpuOpts {
+		return {
+			...this.fileCpuOpts,
+			journal: this.journal,
+		};
 	}
 
 	/**
@@ -106,6 +142,12 @@ export class FileActions extends ActionsBase {
 	async ensureCollection(collection: string) {
 		if (await this.issetCollection(collection)) return false;
 		const c_path = this._getCollectionPath(collection);
+		if (this.journal.isActive()) {
+			if (!this.journal.hasMkdir(c_path)) {
+				this.journal.bufferMkdir(c_path);
+			}
+			return true;
+		}
 		await promises.mkdir(c_path, {
 			recursive: true,
 		});
@@ -129,6 +171,7 @@ export class FileActions extends ActionsBase {
 	 * Add a new entry to the specified database.
 	 */
 	async add(query: VQueryT.Add) {
+		this._validateTransaction(query);
 		const { collection, data } = query;
 		this._ensureQueryFormat(query);
 
@@ -136,10 +179,18 @@ export class FileActions extends ActionsBase {
 		const c_path = this._getCollectionPath(collection);
 		const file =
 			c_path +
-			(await this.utils.getLastFile(c_path, this.options.maxFileSize, query));
+			(await this.utils.getLastFile(
+				c_path,
+				this.options.maxFileSize,
+				query,
+				this._getOpts(),
+			));
 
+		if (this.activeTx && !query.transaction) {
+			query.transaction = this.activeTx;
+		}
 		await addId(query, this);
-		await this.fileCpu.add(file, query, this.fileCpuOpts);
+		await this.fileCpu.add(file, query, this._getOpts());
 		return data;
 	}
 
@@ -147,6 +198,7 @@ export class FileActions extends ActionsBase {
 	 * Find entries in the specified database based on search criteria.
 	 */
 	async find(query: VQueryT.Find) {
+		this._validateTransaction(query);
 		await this.ensureCollection(query.collection);
 		this._ensureQueryFormat(query);
 
@@ -155,7 +207,7 @@ export class FileActions extends ActionsBase {
 		if (files.length === 0) return [];
 
 		files = files.map(file => c_path + file);
-		const data = await findUtil(query, this.fileCpu, files, this.fileCpuOpts);
+		const data = await findUtil(query, this.fileCpu, files, this._getOpts());
 		return data || [];
 	}
 
@@ -163,6 +215,7 @@ export class FileActions extends ActionsBase {
 	 * Find the first matching entry in the specified database based on search criteria.
 	 */
 	async findOne(query: VQueryT.FindOne) {
+		this._validateTransaction(query);
 		const { collection } = query;
 		this._ensureQueryFormat(query);
 
@@ -174,7 +227,7 @@ export class FileActions extends ActionsBase {
 			const data = (await this.fileCpu.findOne(
 				c_path + f,
 				query,
-				this.fileCpuOpts,
+				this._getOpts(),
 			)) as Data;
 			if (data) return data;
 		}
@@ -185,6 +238,7 @@ export class FileActions extends ActionsBase {
 	 * Update entries in the specified database based on search criteria and an updater function or object.
 	 */
 	async update(query: VQueryT.Update) {
+		this._validateTransaction(query);
 		const { collection } = query;
 		this._ensureQueryFormat(query);
 
@@ -195,7 +249,7 @@ export class FileActions extends ActionsBase {
 			this.fileCpu.update.bind(this.fileCpu),
 			false,
 			query,
-			this.fileCpuOpts,
+			this._getOpts(),
 		);
 	}
 
@@ -203,6 +257,7 @@ export class FileActions extends ActionsBase {
 	 * Update the first matching entry in the specified database based on search criteria and an updater function or object.
 	 */
 	async updateOne(query: VQueryT.Update) {
+		this._validateTransaction(query);
 		const { collection } = query;
 		this._ensureQueryFormat(query);
 
@@ -213,7 +268,7 @@ export class FileActions extends ActionsBase {
 			this.fileCpu.update.bind(this.fileCpu),
 			true,
 			query,
-			this.fileCpuOpts,
+			this._getOpts(),
 		);
 
 		return res[0] ?? null;
@@ -223,6 +278,7 @@ export class FileActions extends ActionsBase {
 	 * Remove entries from the specified database based on search criteria.
 	 */
 	async remove(query: VQueryT.Remove) {
+		this._validateTransaction(query);
 		const { collection } = query;
 		this._ensureQueryFormat(query);
 
@@ -233,7 +289,7 @@ export class FileActions extends ActionsBase {
 			this.fileCpu.remove.bind(this.fileCpu),
 			false,
 			query,
-			this.fileCpuOpts,
+			this._getOpts(),
 		);
 	}
 
@@ -241,6 +297,7 @@ export class FileActions extends ActionsBase {
 	 * Remove the first matching entry from the specified database based on search criteria.
 	 */
 	async removeOne(query: VQueryT.Remove) {
+		this._validateTransaction(query);
 		const { collection } = query;
 		this._ensureQueryFormat(query);
 
@@ -251,7 +308,7 @@ export class FileActions extends ActionsBase {
 			this.fileCpu.remove.bind(this.fileCpu),
 			true,
 			query,
-			this.fileCpuOpts,
+			this._getOpts(),
 		);
 
 		return res[0] ?? null;
@@ -266,5 +323,63 @@ export class FileActions extends ActionsBase {
 			force: true,
 		});
 		return true;
+	}
+
+	async beginTransaction(id: Id): Promise<TransactionHandle> {
+		if (this.activeTx) throw new Error("transaction already active");
+		if (this.journal.isPoisoned()) {
+			throw new Error(
+				"journal is poisoned from previous failed commit, cannot begin new transaction",
+			);
+		}
+		const handle: TransactionHandle = {
+			id,
+		};
+		this.journal.begin();
+		this.activeTx = handle;
+		return handle;
+	}
+
+	async commitTransaction(handle: TransactionHandle) {
+		if (!this.activeTx || this.activeTx.id !== handle.id) {
+			throw new Error("transaction handle mismatch");
+		}
+		try {
+			await this.journal.commit();
+		} catch (err) {
+			this.activeTx = null;
+			try {
+				await this.journal.rollback();
+			} catch {}
+			this.journal.resetPoisoned();
+			throw err;
+		}
+		this.activeTx = null;
+	}
+
+	async rollbackTransaction(handle: TransactionHandle) {
+		if (!this.activeTx || this.activeTx.id !== handle.id) {
+			throw new Error("transaction handle mismatch");
+		}
+		try {
+			await this.journal.rollback();
+		} catch (err) {
+			this.activeTx = null;
+			this.journal.resetPoisoned();
+			throw err;
+		}
+		this.activeTx = null;
+	}
+
+	/**
+	 * Recover from failed transaction state.
+	 * Resets active transaction, performs rollback, and clears poisoned state.
+	 */
+	async recover() {
+		this.activeTx = null;
+		try {
+			await this.journal.rollback();
+		} catch {}
+		this.journal.resetPoisoned();
 	}
 }

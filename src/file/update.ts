@@ -14,14 +14,23 @@ export async function update(
 ) {
 	file = pathRepair(file);
 
-	if (!(await exists(file))) return [];
+	let sourceFile = file;
+	let targetFile = file;
 
-	const tmpFile = file + ".tmp";
+	if (opts.journal?.isActive()) {
+		const stagingPath = await opts.journal.getOrCreateStaging(file);
+		sourceFile = stagingPath;
+		targetFile = stagingPath;
+	}
+
+	if (!(await exists(sourceFile))) return [];
+
+	const tmpFile = targetFile + ".tmp";
 	await promises.writeFile(tmpFile, "");
 
 	const delimiter = getDelimiter(opts);
 
-	const rl = createRL(file, delimiter);
+	const rl = createRL(sourceFile, delimiter);
 	const ws = createWriteStream(tmpFile, {
 		flags: "a",
 	});
@@ -54,6 +63,12 @@ export async function update(
 	await new Promise((res, rej) => {
 		ws.end((err: any) => (err ? rej(err) : res(null)));
 	});
+
+	if (opts.journal?.isActive()) {
+		await promises.rename(tmpFile, targetFile);
+		return updated;
+	}
+
 	await promises.rename(tmpFile, file);
 
 	return updated;

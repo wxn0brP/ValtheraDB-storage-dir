@@ -10,7 +10,13 @@ import { getDelimiter } from "./utils";
 export const vFileCpu: FileCpu = {
 	add: async (file: string, config: VQueryT.Add, opts: FileCpuOpts) => {
 		const dataString = opts.format.stringify(config.data, opts);
-		await appendFile(file, dataString + getDelimiter(opts));
+		const content = dataString + getDelimiter(opts);
+		if (opts.journal?.isActive()) {
+			const stagingPath = await opts.journal.getOrCreateStaging(file);
+			await appendFile(stagingPath, content);
+			return;
+		}
+		await appendFile(file, content);
 	},
 	find,
 	findOne,

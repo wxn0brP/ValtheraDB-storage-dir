@@ -12,13 +12,21 @@ export async function find(
 ): Promise<any[]> {
 	file = pathRepair(file);
 	return await new Promise(async resolve => {
-		if (!(await exists(file))) {
+		let readFile = file;
+		if (opts.journal?.isActive()) {
+			const stagingPath = opts.journal.getStagingPath(file);
+			if (stagingPath) {
+				readFile = stagingPath;
+			}
+		}
+
+		if (!(await exists(readFile))) {
 			resolve([]);
 			return;
 		}
 
 		const delimiter = getDelimiter(opts);
-		const rl = createRL(file, delimiter);
+		const rl = createRL(readFile, delimiter);
 		const results = [];
 		for await (const block of rl) {
 			if (!block) continue;
@@ -40,13 +48,21 @@ export async function findOne(
 ): Promise<any | null> {
 	file = pathRepair(file);
 	return await new Promise(async resolve => {
-		if (!(await exists(file))) {
+		let readFile = file;
+		if (opts.journal?.isActive()) {
+			const stagingPath = opts.journal.getStagingPath(file);
+			if (stagingPath) {
+				readFile = stagingPath;
+			}
+		}
+
+		if (!(await exists(readFile))) {
 			resolve(null);
 			return;
 		}
 
 		const delimiter = getDelimiter(opts);
-		const rl = createRL(file, delimiter);
+		const rl = createRL(readFile, delimiter);
 		for await (const block of rl) {
 			if (!block) continue;
 			const trimmed = block.trim();

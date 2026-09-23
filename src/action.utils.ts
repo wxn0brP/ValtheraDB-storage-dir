@@ -1,19 +1,32 @@
-import { VQuery } from "@wxn0brp/db-core/types/query";
-import { mkdir, readdir, stat, writeFile } from "fs/promises";
-import { exists } from "./utils";
 import { DataInternal } from "@wxn0brp/db-core/types/data";
+import { VQuery } from "@wxn0brp/db-core/types/query";
+import { Dirent } from "fs";
+import { mkdir, readdir, stat, writeFile } from "fs/promises";
 import { FileCpuOpts } from "./types";
+import { exists } from "./utils";
 
 export class FileActionsUtils {
-	async getLastFile(path: string, maxFileSize: number, query: VQuery) {
-		if (!(await exists(path)))
-			await mkdir(path, {
-				recursive: true,
-			});
+	async getLastFile(
+		path: string,
+		maxFileSize: number,
+		query: VQuery,
+		opts?: FileCpuOpts,
+	) {
+		const inTx = opts?.journal?.isActive();
+
+		if (!(await exists(path))) {
+			if (!inTx) {
+				await mkdir(path, {
+					recursive: true,
+				});
+			}
+		}
 		const files = await this.getSortedFiles(path, query);
 
 		if (files.length === 0) {
-			await writeFile(path + "/1.db", "");
+			if (!inTx) {
+				await writeFile(path + "/1.db", "");
+			}
 			return "1.db";
 		}
 
@@ -23,7 +36,9 @@ export class FileActionsUtils {
 		if ((await stat(info)).size < maxFileSize) return last;
 
 		const num = parseInt(last.replace(".db", ""), 10) + 1;
-		await writeFile(path + "/" + num + ".db", "");
+		if (!inTx) {
+			await writeFile(path + "/" + num + ".db", "");
+		}
 		query.control ||= {} as any;
 		query.control.dir ||= {};
 		query.control.dir.lastFileNum = num;
@@ -31,9 +46,14 @@ export class FileActionsUtils {
 	}
 
 	async getSortedFiles(folder: string, query: VQuery): Promise<string[]> {
-		const files = await readdir(folder, {
-			withFileTypes: true,
-		});
+		let files: Dirent[];
+		try {
+			files = await readdir(folder, {
+				withFileTypes: true,
+			});
+		} catch {
+			return [];
+		}
 
 		const sorted = files
 			.filter(file => file.isFile() && !file.name.endsWith(".tmp"))
