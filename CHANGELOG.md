@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.120.3](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.2...v0.120.3) (2026-09-26)
+
+
+### Features
+
+* improve tx ([9dac7ea](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/9dac7eadb84d4a2028b534a8290d6a3ed0965e06))
+* journal ([b8600c8](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/b8600c8e3b6147a3ae87c1ca999abc4429e43337))
+
 ### [0.120.2](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.1...v0.120.2) (2026-08-27)
 
 
