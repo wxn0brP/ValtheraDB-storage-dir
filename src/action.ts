@@ -387,4 +387,65 @@ export class FileActions extends ActionsBase {
 		} catch {}
 		this.journal.resetPoisoned();
 	}
+
+	async count(config: VQueryT.Count) {
+		this._validateTransaction(config);
+		await this.ensureCollection(config.collection);
+		this._ensureQueryFormat(config);
+
+		const c_path = this._getCollectionPath(config.collection);
+		const files = await this.utils.getSortedFiles(
+			c_path,
+			config,
+			this._getOpts(),
+		);
+		if (files.length === 0) return 0;
+
+		let count = 0;
+		for (const f of files) {
+			const matches = await this.fileCpu.find(
+				c_path + f,
+				config as VQueryT.Find,
+				this._getOpts(),
+			);
+			count += matches.length;
+		}
+		return count;
+	}
+
+	async bulkAdd(query: VQueryT.BulkAdd) {
+		this._validateTransaction(query);
+		const { collection, datas } = query;
+		this._ensureQueryFormat(query);
+
+		await this.ensureCollection(collection);
+		const c_path = this._getCollectionPath(collection);
+		const file =
+			c_path +
+			(await this.utils.getLastFile(
+				c_path,
+				this.options.maxFileSize,
+				query,
+				this._getOpts(),
+			));
+
+		if (this.activeTx && !query.transaction) {
+			query.transaction = this.activeTx;
+		}
+
+		const results = [];
+		for (const data of datas) {
+			const singleQuery: VQueryT.Add = {
+				collection,
+				data,
+				id_gen: query.id_gen,
+				control: query.control,
+				transaction: query.transaction,
+			};
+			await addId(singleQuery, this);
+			await this.fileCpu.add(file, singleQuery, this._getOpts());
+			results.push(data);
+		}
+		return results;
+	}
 }
