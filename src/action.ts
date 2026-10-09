@@ -1,5 +1,5 @@
 import { ActionsBase } from "@wxn0brp/db-core/base/actions";
-import { addId } from "@wxn0brp/db-core/helpers/addId";
+import { addId, addIdBulk } from "@wxn0brp/db-core/helpers/addId";
 import { Id } from "@wxn0brp/db-core/types/Id";
 import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
@@ -433,6 +433,8 @@ export class FileActions extends ActionsBase {
 			query.transaction = this.activeTx;
 		}
 
+		await addIdBulk(query, this);
+
 		const results = [];
 		for (const data of datas) {
 			const singleQuery: VQueryT.Add = {
@@ -442,7 +444,6 @@ export class FileActions extends ActionsBase {
 				control: query.control,
 				transaction: query.transaction,
 			};
-			await addId(singleQuery, this);
 			await this.fileCpu.add(file, singleQuery, this._getOpts());
 			results.push(data);
 		}
