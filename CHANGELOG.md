@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.120.5](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.4...v0.120.5) (2026-10-11)
+
+
+### Features
+
+* optimize bulk add ([fa0228d](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/fa0228da8e148e1a2977888edad49d23e30cad11))
+
 ### [0.120.4](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.3...v0.120.4) (2026-10-05)
 
 ### [0.120.3](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.2...v0.120.3) (2026-09-26)
