@@ -15,5 +15,6 @@ export function createFileAdapter(folder: string, options: DbDirOpts = {}) {
 export const createFileActions = createFileAdapter;
 
 export const DYNAMIC = {
+	def: createFileAdapter,
 	dir: createFileAdapter,
 };
