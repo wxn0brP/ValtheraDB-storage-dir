@@ -36,31 +36,38 @@ export async function remove(
 	});
 
 	const removed = [];
-	for await (const block of rl) {
-		if (!block) continue;
-		const trimmed = block.trim();
+	try {
+		for await (const block of rl) {
+			if (!block) continue;
+			const trimmed = block.trim();
 
-		if (one && removed.length) {
+			if (one && removed.length) {
+				ws.write(trimmed);
+				ws.write(delimiter);
+				continue;
+			}
+			if (!trimmed) continue;
+
+			const data = opts.format.parse(trimmed, opts.opts);
+			if (matchObj(config, data)) {
+				removed.push(data);
+				continue;
+			}
+
 			ws.write(trimmed);
 			ws.write(delimiter);
-			continue;
-		}
-		if (!trimmed) continue;
-
-		const data = opts.format.parse(trimmed, opts.opts);
-		if (matchObj(config, data)) {
-			removed.push(data);
-			continue;
 		}
 
-		ws.write(trimmed);
-		ws.write(delimiter);
+		await new Promise<void>((res, rej) => {
+			ws.once("error", rej);
+			ws.end(() => res());
+		});
+	} catch (err) {
+		ws.destroy();
+		throw err;
+	} finally {
+		rl.close();
 	}
-
-	rl.close();
-	await new Promise((res, rej) => {
-		ws.end((err: any) => (err ? rej(err) : res(null)));
-	});
 
 	if (opts.journal?.isActive()) {
 		await promises.rename(tmpFile, targetFile);

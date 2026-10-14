@@ -1,4 +1,9 @@
 import { ActionsBase } from "@wxn0brp/db-core/base/actions";
+import {
+	AdapterInitError,
+	ErrorCodes,
+	TransactionError,
+} from "@wxn0brp/db-core/errors";
 import { addId, addIdBulk } from "@wxn0brp/db-core/helpers/addId";
 import { Id } from "@wxn0brp/db-core/types/Id";
 import { Data } from "@wxn0brp/db-core/types/data";
@@ -24,6 +29,11 @@ export class FileActions extends ActionsBase {
 	journal: DirJournal;
 	activeTx: TransactionHandle = null;
 	version = version;
+	capabilities = {
+		transactions: true,
+		indexes: false,
+		persistent: true,
+	};
 
 	/**
 	 * Creates a new instance of FileActions.
@@ -56,7 +66,12 @@ export class FileActions extends ActionsBase {
 						...format[name],
 					};
 			} else {
-				throw new Error(`Unknown format: ${this.options.format}`);
+				throw new AdapterInitError(
+					new Error(`Unknown format: ${this.options.format}`),
+					{
+						format: this.options.format,
+					},
+				);
 			}
 		} else {
 			this.format = this.options.format as Format;
@@ -69,12 +84,19 @@ export class FileActions extends ActionsBase {
 	}
 
 	async init() {
-		if (!(await exists(this.folder)))
-			await promises.mkdir(this.folder, {
-				recursive: true,
+		try {
+			if (!(await exists(this.folder)))
+				await promises.mkdir(this.folder, {
+					recursive: true,
+				});
+			await this.journal.cleanupStaging();
+			await this.format?.init?.();
+		} catch (err) {
+			throw new AdapterInitError(err, {
+				folder: this.folder,
+				format: this.options.format,
 			});
-		await this.journal.cleanupStaging();
-		await this.format?.init?.();
+		}
 	}
 
 	_getCollectionPath(collection: string) {
@@ -94,15 +116,31 @@ export class FileActions extends ActionsBase {
 	 */
 	_validateTransaction(query: VQuery) {
 		if (this.journal.isPoisoned()) {
-			throw new Error(
+			throw new TransactionError(
 				"journal is poisoned from previous failed commit, cannot perform operations",
+				{
+					code: ErrorCodes.TRANSACTION_FAILED,
+					context: {
+						op: "validateTransaction",
+						collection: query?.collection,
+					},
+				},
 			);
 		}
 		const txHandle = query.transaction;
 		if (this.activeTx) {
 			if (!txHandle || txHandle.id !== this.activeTx.id) {
-				throw new Error(
+				throw new TransactionError(
 					"transaction is active but operation has no or mismatched handle",
+					{
+						code: ErrorCodes.TRANSACTION_FAILED,
+						context: {
+							op: "validateTransaction",
+							collection: query?.collection,
+							handle: txHandle?.id,
+							active: this.activeTx.id,
+						},
+					},
 				);
 			}
 		}
@@ -331,10 +369,25 @@ export class FileActions extends ActionsBase {
 	}
 
 	async beginTransaction(id: Id): Promise<TransactionHandle> {
-		if (this.activeTx) throw new Error("transaction already active");
+		if (this.activeTx)
+			throw new TransactionError("transaction already active", {
+				code: ErrorCodes.TRANSACTION_FAILED,
+				context: {
+					op: "beginTransaction",
+					handle: id,
+					active: this.activeTx.id,
+				},
+			});
 		if (this.journal.isPoisoned()) {
-			throw new Error(
+			throw new TransactionError(
 				"journal is poisoned from previous failed commit, cannot begin new transaction",
+				{
+					code: ErrorCodes.TRANSACTION_FAILED,
+					context: {
+						op: "beginTransaction",
+						handle: id,
+					},
+				},
 			);
 		}
 		const handle: TransactionHandle = {
@@ -347,7 +400,14 @@ export class FileActions extends ActionsBase {
 
 	async commitTransaction(handle: TransactionHandle) {
 		if (!this.activeTx || this.activeTx.id !== handle.id) {
-			throw new Error("transaction handle mismatch");
+			throw new TransactionError("transaction handle mismatch", {
+				code: ErrorCodes.TRANSACTION_FAILED,
+				context: {
+					op: "commitTransaction",
+					handle: handle?.id,
+					active: this.activeTx?.id,
+				},
+			});
 		}
 		try {
 			await this.journal.commit();
@@ -357,21 +417,40 @@ export class FileActions extends ActionsBase {
 				await this.journal.rollback();
 			} catch {}
 			this.journal.resetPoisoned();
-			throw err;
+			throw new TransactionError("Transaction commit failed", {
+				cause: err,
+				context: {
+					op: "commitTransaction",
+					handle: handle.id,
+				},
+			});
 		}
 		this.activeTx = null;
 	}
 
 	async rollbackTransaction(handle: TransactionHandle) {
 		if (!this.activeTx || this.activeTx.id !== handle.id) {
-			throw new Error("transaction handle mismatch");
+			throw new TransactionError("transaction handle mismatch", {
+				code: ErrorCodes.TRANSACTION_FAILED,
+				context: {
+					op: "rollbackTransaction",
+					handle: handle?.id,
+					active: this.activeTx?.id,
+				},
+			});
 		}
 		try {
 			await this.journal.rollback();
 		} catch (err) {
 			this.activeTx = null;
 			this.journal.resetPoisoned();
-			throw err;
+			throw new TransactionError("Transaction rollback failed", {
+				cause: err,
+				context: {
+					op: "rollbackTransaction",
+					handle: handle.id,
+				},
+			});
 		}
 		this.activeTx = null;
 	}

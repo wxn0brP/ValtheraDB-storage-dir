@@ -11,23 +11,21 @@ export async function find(
 	opts: FileCpuOpts,
 ): Promise<any[]> {
 	file = pathRepair(file);
-	return await new Promise(async resolve => {
-		let readFile = file;
-		if (opts.journal?.isActive()) {
-			const stagingPath = opts.journal.getStagingPath(file);
-			if (stagingPath) {
-				readFile = stagingPath;
-			}
-		}
 
-		if (!(await exists(readFile))) {
-			resolve([]);
-			return;
+	let readFile = file;
+	if (opts.journal?.isActive()) {
+		const stagingPath = opts.journal.getStagingPath(file);
+		if (stagingPath) {
+			readFile = stagingPath;
 		}
+	}
 
-		const delimiter = getDelimiter(opts);
-		const rl = createRL(readFile, delimiter);
-		const results = [];
+	if (!(await exists(readFile))) return [];
+
+	const delimiter = getDelimiter(opts);
+	const rl = createRL(readFile, delimiter);
+	const results = [];
+	try {
 		for await (const block of rl) {
 			if (!block) continue;
 			const trimmed = block.trim();
@@ -36,9 +34,10 @@ export async function find(
 			const res = findObj(config, opts.format.parse(block, opts.opts));
 			if (res) results.push(res);
 		}
-		resolve(results);
+	} finally {
 		rl.close();
-	});
+	}
+	return results;
 }
 
 export async function findOne(
@@ -47,34 +46,30 @@ export async function findOne(
 	opts: FileCpuOpts,
 ): Promise<any | null> {
 	file = pathRepair(file);
-	return await new Promise(async resolve => {
-		let readFile = file;
-		if (opts.journal?.isActive()) {
-			const stagingPath = opts.journal.getStagingPath(file);
-			if (stagingPath) {
-				readFile = stagingPath;
-			}
-		}
 
-		if (!(await exists(readFile))) {
-			resolve(null);
-			return;
+	let readFile = file;
+	if (opts.journal?.isActive()) {
+		const stagingPath = opts.journal.getStagingPath(file);
+		if (stagingPath) {
+			readFile = stagingPath;
 		}
+	}
 
-		const delimiter = getDelimiter(opts);
-		const rl = createRL(readFile, delimiter);
+	if (!(await exists(readFile))) return null;
+
+	const delimiter = getDelimiter(opts);
+	const rl = createRL(readFile, delimiter);
+	try {
 		for await (const block of rl) {
 			if (!block) continue;
 			const trimmed = block.trim();
 			if (!trimmed) continue;
 
 			const res = findObj(config, opts.format.parse(block, opts.opts));
-			if (res) {
-				resolve(res);
-				rl.close();
-				return;
-			}
+			if (res) return res;
 		}
-		resolve(null);
-	});
+	} finally {
+		rl.close();
+	}
+	return null;
 }

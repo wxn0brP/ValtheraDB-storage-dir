@@ -36,33 +36,40 @@ export async function update(
 	});
 
 	const updated = [];
-	for await (let block of rl) {
-		if (!block) continue;
-		const trimmed = block.trim();
+	try {
+		for await (let block of rl) {
+			if (!block) continue;
+			const trimmed = block.trim();
 
-		if (one && updated.length) {
-			ws.write(trimmed);
+			if (one && updated.length) {
+				ws.write(trimmed);
+				ws.write(delimiter);
+				continue;
+			}
+
+			if (!trimmed) continue;
+			const data = opts.format.parse(trimmed, opts.opts);
+
+			if (matchObj(config, data)) {
+				const updatedObj = updateObj(config, data);
+				block = opts.format.stringify(updatedObj, opts.opts);
+				updated.push(updatedObj);
+			}
+
+			ws.write(block);
 			ws.write(delimiter);
-			continue;
 		}
 
-		if (!trimmed) continue;
-		const data = opts.format.parse(trimmed, opts.opts);
-
-		if (matchObj(config, data)) {
-			const updatedObj = updateObj(config, data);
-			block = opts.format.stringify(updatedObj, opts.opts);
-			updated.push(updatedObj);
-		}
-
-		ws.write(block);
-		ws.write(delimiter);
+		await new Promise<void>((res, rej) => {
+			ws.once("error", rej);
+			ws.end(() => res());
+		});
+	} catch (err) {
+		ws.destroy();
+		throw err;
+	} finally {
+		rl.close();
 	}
-	rl.close();
-
-	await new Promise((res, rej) => {
-		ws.end((err: any) => (err ? rej(err) : res(null)));
-	});
 
 	if (opts.journal?.isActive()) {
 		await promises.rename(tmpFile, targetFile);

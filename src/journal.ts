@@ -1,3 +1,4 @@
+import { TransactionError } from "@wxn0brp/db-core/errors";
 import { promises } from "fs";
 import { join } from "path";
 
@@ -20,7 +21,14 @@ export class DirJournal {
 
 	begin() {
 		if (this.poisoned) {
-			throw new Error("journal is poisoned, cannot begin new transaction");
+			throw new TransactionError(
+				"journal is poisoned, cannot begin new transaction",
+				{
+					context: {
+						op: "beginJournal",
+					},
+				},
+			);
 		}
 		this.active = true;
 		this.files.clear();
@@ -33,7 +41,12 @@ export class DirJournal {
 	 */
 	async getOrCreateStaging(originalPath: string) {
 		if (!this.active) {
-			throw new Error("journal not active");
+			throw new TransactionError("journal not active", {
+				context: {
+					op: "getOrCreateStaging",
+					path: originalPath,
+				},
+			});
 		}
 
 		const existing = this.files.get(originalPath);
@@ -48,7 +61,16 @@ export class DirJournal {
 
 		try {
 			await promises.copyFile(originalPath, stagingPath);
-		} catch {
+		} catch (err: any) {
+			if (err?.code !== "ENOENT") {
+				throw new TransactionError("Failed to create staging copy", {
+					cause: err,
+					context: {
+						op: "getOrCreateStaging",
+						path: originalPath,
+					},
+				});
+			}
 			await promises.writeFile(stagingPath, "");
 		}
 
