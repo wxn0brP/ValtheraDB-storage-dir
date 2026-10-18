@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.120.7](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.6...v0.120.7) (2026-10-18)
+
+
+### Features
+
+* update DYNAMIC ([72040e8](https://github.com/wxn0brP/ValtheraDB-storage-dir/commit/72040e86c85a1c2c06b84c74a83018d20275371d))
+
 ### [0.120.6](https://github.com/wxn0brP/ValtheraDB-storage-dir/compare/v0.120.5...v0.120.6) (2026-10-15)
 
 
