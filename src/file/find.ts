@@ -3,7 +3,15 @@ import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { findObj } from "@wxn0brp/db-core/utils/process";
 import { FileCpuOpts } from "../types";
 import { exists } from "../utils";
-import { createRL, getDelimiter } from "./utils";
+import { createRL, getDelimiter, readBlocks } from "./utils";
+
+function resolveSource(file: string, opts: FileCpuOpts) {
+	if (opts.journal?.isActive()) {
+		const stagingPath = opts.journal.getStagingPath(file);
+		if (stagingPath) return stagingPath;
+	}
+	return file;
+}
 
 export async function find(
 	file: string,
@@ -11,19 +19,55 @@ export async function find(
 	opts: FileCpuOpts,
 ): Promise<any[]> {
 	file = pathRepair(file);
-
-	let readFile = file;
-	if (opts.journal?.isActive()) {
-		const stagingPath = opts.journal.getStagingPath(file);
-		if (stagingPath) {
-			readFile = stagingPath;
-		}
-	}
+	const readFile = resolveSource(file, opts);
 
 	if (!(await exists(readFile))) return [];
 
-	const delimiter = getDelimiter(opts);
-	const rl = createRL(readFile, delimiter);
+	const blocks = await readBlocks(readFile, opts);
+	if (!blocks) return findStreaming(readFile, config, opts);
+
+	const results = [];
+	for (const raw of blocks) {
+		if (raw.length === 0) continue;
+		const block = raw.toString("utf8");
+		if (!block.trim()) continue;
+
+		const res = findObj(config, opts.format.parse(block, opts.opts));
+		if (res) results.push(res);
+	}
+	return results;
+}
+
+export async function findOne(
+	file: string,
+	config: VQueryT.FindOne,
+	opts: FileCpuOpts,
+): Promise<any | null> {
+	file = pathRepair(file);
+	const readFile = resolveSource(file, opts);
+
+	if (!(await exists(readFile))) return null;
+
+	const blocks = await readBlocks(readFile, opts);
+	if (!blocks) return findOneStreaming(readFile, config, opts);
+
+	for (const raw of blocks) {
+		if (raw.length === 0) continue;
+		const block = raw.toString("utf8");
+		if (!block.trim()) continue;
+
+		const res = findObj(config, opts.format.parse(block, opts.opts));
+		if (res) return res;
+	}
+	return null;
+}
+
+async function findStreaming(
+	readFile: string,
+	config: VQueryT.Find,
+	opts: FileCpuOpts,
+) {
+	const rl = createRL(readFile, getDelimiter(opts));
 	const results = [];
 	try {
 		for await (const block of rl) {
@@ -40,25 +84,12 @@ export async function find(
 	return results;
 }
 
-export async function findOne(
-	file: string,
+async function findOneStreaming(
+	readFile: string,
 	config: VQueryT.FindOne,
 	opts: FileCpuOpts,
-): Promise<any | null> {
-	file = pathRepair(file);
-
-	let readFile = file;
-	if (opts.journal?.isActive()) {
-		const stagingPath = opts.journal.getStagingPath(file);
-		if (stagingPath) {
-			readFile = stagingPath;
-		}
-	}
-
-	if (!(await exists(readFile))) return null;
-
-	const delimiter = getDelimiter(opts);
-	const rl = createRL(readFile, delimiter);
+) {
+	const rl = createRL(readFile, getDelimiter(opts));
 	try {
 		for await (const block of rl) {
 			if (!block) continue;

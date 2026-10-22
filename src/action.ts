@@ -17,7 +17,7 @@ import { FileActionsUtils } from "./action.utils";
 import { extendJson, format } from "./format";
 import { DirJournal } from "./journal";
 import { DbDirOpts, FileCpuOpts, Format } from "./types";
-import { exists } from "./utils";
+import { exists, cleanupTmpFiles } from "./utils";
 import { version } from "./version";
 
 export class FileActions extends ActionsBase {
@@ -90,6 +90,7 @@ export class FileActions extends ActionsBase {
 					recursive: true,
 				});
 			await this.journal.cleanupStaging();
+			await cleanupTmpFiles(this.folder);
 			await this.format?.init?.();
 		} catch (err) {
 			throw new AdapterInitError(err, {
