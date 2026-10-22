@@ -183,7 +183,9 @@ describe("action.utils.ts", () => {
 			const callOrder: string[] = [];
 			const mockWorker: any = async (file: string) => {
 				callOrder.push(file);
-				return true;
+				return [
+					{},
+				];
 			};
 
 			const query = {
@@ -209,7 +211,9 @@ describe("action.utils.ts", () => {
 			const callOrder: string[] = [];
 			const mockWorker: any = async (file: string) => {
 				callOrder.push(file);
-				return true;
+				return [
+					{},
+				];
 			};
 
 			const query = {
@@ -227,14 +231,14 @@ describe("action.utils.ts", () => {
 			expect(callOrder[0]).toContain("1.db");
 		});
 
-		it("3. should continue when worker returns false", async () => {
+		it("3. should continue when worker returns empty array", async () => {
 			await writeFile(join(TEST_DIR, "1.db"), "content1");
 			await writeFile(join(TEST_DIR, "2.db"), "content2");
 
 			const callOrder: string[] = [];
 			const mockWorker: any = async (file: string) => {
 				callOrder.push(file);
-				return false;
+				return [];
 			};
 
 			const query = {

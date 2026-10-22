@@ -9,6 +9,7 @@ export function createRL(file: string, delimiter: string): LineReader {
 	const stream: ReadStream = createReadStream(file, {
 		highWaterMark: 64 * 1024,
 	});
+	stream.setEncoding("utf8");
 
 	let buffer = "";
 	let done = false;
@@ -16,8 +17,8 @@ export function createRL(file: string, delimiter: string): LineReader {
 	const blocks: string[] = [];
 	let waiting: ((result: IteratorResult<string>) => void) | null = null;
 
-	stream.on("data", (chunk: Buffer) => {
-		buffer += chunk.toString("utf8");
+	stream.on("data", (chunk: string) => {
+		buffer += chunk;
 		let index: number;
 		while ((index = buffer.indexOf(delimiter)) >= 0) {
 			const block = buffer.slice(0, index);

@@ -37,26 +37,31 @@ export async function update(
 
 	const updated = [];
 	try {
-		for await (let block of rl) {
-			if (!block) continue;
+		for await (const block of rl) {
 			const trimmed = block.trim();
 
-			if (one && updated.length) {
-				ws.write(trimmed);
+			if (!trimmed) {
+				ws.write(block);
 				ws.write(delimiter);
 				continue;
 			}
 
-			if (!trimmed) continue;
+			if (one && updated.length) {
+				ws.write(block);
+				ws.write(delimiter);
+				continue;
+			}
+
+			let out = block;
 			const data = opts.format.parse(trimmed, opts.opts);
 
 			if (matchObj(config, data)) {
 				const updatedObj = updateObj(config, data);
-				block = opts.format.stringify(updatedObj, opts.opts);
+				out = opts.format.stringify(updatedObj, opts.opts);
 				updated.push(updatedObj);
 			}
 
-			ws.write(block);
+			ws.write(out);
 			ws.write(delimiter);
 		}
 

@@ -115,7 +115,7 @@ export class FileActionsUtils {
 		for (const file of files) {
 			const updated = await worker(c_path + file, config, one, opts);
 			update.push(updated);
-			if (one && updated) break;
+			if (one && updated.length) break;
 		}
 		return update.flat();
 	}
