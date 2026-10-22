@@ -144,6 +144,31 @@ export async function readBlocks(file: string, opts: FileCpuOpts) {
 	return splitBlocks(content, getDelimiterBuffer(opts));
 }
 
+export async function* scanRecords(file: string, delimiter: Buffer) {
+	const stream = createReadStream(file, {
+		highWaterMark: 64 * 1024,
+	});
+	let buffer: Buffer = Buffer.alloc(0);
+
+	for await (const chunk of stream) {
+		const data = chunk as Buffer;
+		buffer = buffer.length
+			? Buffer.concat([
+					buffer,
+					data,
+				])
+			: data;
+
+		let index: number;
+		while ((index = buffer.indexOf(delimiter)) !== -1) {
+			yield buffer.subarray(0, index);
+			buffer = buffer.subarray(index + delimiter.length);
+		}
+	}
+
+	if (buffer.length > 0) yield buffer;
+}
+
 export function tmpPath(file: string) {
 	return `${file}.tmp`;
 }

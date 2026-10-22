@@ -3,7 +3,13 @@ import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { findObj } from "@wxn0brp/db-core/utils/process";
 import { FileCpuOpts } from "../types";
 import { exists } from "../utils";
-import { createRL, getDelimiter, readBlocks } from "./utils";
+import {
+	createRL,
+	getDelimiter,
+	getDelimiterBuffer,
+	readBlocks,
+	scanRecords,
+} from "./utils";
 
 function resolveSource(file: string, opts: FileCpuOpts) {
 	if (opts.journal?.isActive()) {
@@ -48,10 +54,8 @@ export async function findOne(
 
 	if (!(await exists(readFile))) return null;
 
-	const blocks = await readBlocks(readFile, opts);
-	if (!blocks) return findOneStreaming(readFile, config, opts);
-
-	for (const raw of blocks) {
+	const delimiter = getDelimiterBuffer(opts);
+	for await (const raw of scanRecords(readFile, delimiter)) {
 		if (raw.length === 0) continue;
 		const block = raw.toString("utf8");
 		if (!block.trim()) continue;
@@ -82,25 +86,4 @@ async function findStreaming(
 		rl.close();
 	}
 	return results;
-}
-
-async function findOneStreaming(
-	readFile: string,
-	config: VQueryT.FindOne,
-	opts: FileCpuOpts,
-) {
-	const rl = createRL(readFile, getDelimiter(opts));
-	try {
-		for await (const block of rl) {
-			if (!block) continue;
-			const trimmed = block.trim();
-			if (!trimmed) continue;
-
-			const res = findObj(config, opts.format.parse(block, opts.opts));
-			if (res) return res;
-		}
-	} finally {
-		rl.close();
-	}
-	return null;
 }
