@@ -1,6 +1,6 @@
 {
     "name": "@wxn0brp/db-storage-dir",
-    "version": "0.120.7",
+    "version": "0.120.8-alpha.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "author": "wxn0brP",
