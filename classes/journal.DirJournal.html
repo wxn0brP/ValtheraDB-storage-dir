@@ -17,7 +17,7 @@ Instead of buffering operations, maintains working copies of modified files.
 All staging happens in a single <code>.tx/</code> directory for easy cleanup.</p>
 </div></section><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:10</li></ul></aside>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:10</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -57,7 +57,7 @@ All staging happens in a single <code>.tx/</code> directory for easy cleanup.</p
 <li><span><span class="tsd-kind-parameter">folder</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">DirJournal</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:18</li></ul></aside></div></li></ul></section></section></details>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:18</li></ul></aside></div></li></ul></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -69,7 +69,7 @@ All staging happens in a single <code>.tx/</code> directory for easy cleanup.</p
 <div class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:22</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:22</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="buffermkdir"><span>buffer<wbr/>Mkdir</span><a href="#buffermkdir" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -84,7 +84,7 @@ All staging happens in a single <code>.tx/</code> directory for easy cleanup.</p
 <li><span><span class="tsd-kind-parameter">path</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:109</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:109</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="cleanupstaging"><span>cleanup<wbr/>Staging</span><a href="#cleanupstaging" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -95,7 +95,7 @@ All staging happens in a single <code>.tx/</code> directory for easy cleanup.</p
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:189</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:189</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="commit"><span>commit</span><a href="#commit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -107,7 +107,7 @@ On error: cleanup remaining staging files and poison the journal.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:125</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:125</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getorcreatestaging"><span>get<wbr/>Or<wbr/>Create<wbr/>Staging</span><a href="#getorcreatestaging" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -123,7 +123,7 @@ First call copies original to staging, subsequent calls return existing staging.
 <li><span><span class="tsd-kind-parameter">originalPath</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:42</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:42</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getstagedfiles"><span>get<wbr/>Staged<wbr/>Files</span><a href="#getstagedfiles" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -139,7 +139,7 @@ Returns array of original filenames (not staging paths).</p>
 <li><span><span class="tsd-kind-parameter">folder</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:92</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:92</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getstagingpath"><span>get<wbr/>Staging<wbr/>Path</span><a href="#getstagingpath" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -154,7 +154,7 @@ Returns array of original filenames (not staging paths).</p>
 <li><span><span class="tsd-kind-parameter">originalPath</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:84</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:84</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="hasmkdir"><span>has<wbr/>Mkdir</span><a href="#hasmkdir" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -169,7 +169,7 @@ Returns array of original filenames (not staging paths).</p>
 <li><span><span class="tsd-kind-parameter">path</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:117</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:117</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="isactive"><span>is<wbr/>Active</span><a href="#isactive" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -178,7 +178,7 @@ Returns array of original filenames (not staging paths).</p>
 <div class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:200</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:200</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ispoisoned"><span>is<wbr/>Poisoned</span><a href="#ispoisoned" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -187,7 +187,7 @@ Returns array of original filenames (not staging paths).</p>
 <div class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:204</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:204</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="resetpoisoned"><span>reset<wbr/>Poisoned</span><a href="#resetpoisoned" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -198,7 +198,7 @@ Returns array of original filenames (not staging paths).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:211</li></ul></aside></div></li></ul></section>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:211</li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="rollback"><span>rollback</span><a href="#rollback" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -209,7 +209,7 @@ Returns array of original filenames (not staging paths).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in src/journal.ts:168</li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in work/ValtheraDB-storage-dir/ValtheraDB-storage-dir/src/journal.ts:168</li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
