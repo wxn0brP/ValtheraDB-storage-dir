@@ -14,6 +14,7 @@ export class DirJournal {
 	private files = new Map<string, string>();
 	private mkdirs = new Set<string>();
 	private txDir: string;
+	private _stagingId = 0;
 
 	constructor(folder: string) {
 		this.txDir = join(folder, ".tx");
@@ -56,8 +57,7 @@ export class DirJournal {
 			recursive: true,
 		});
 
-		const basename = originalPath.replace(/[/\\]/g, "_");
-		const stagingPath = join(this.txDir, `${basename}.staging`);
+		const stagingPath = join(this.txDir, `${this._stagingId++}.staging`);
 
 		try {
 			await promises.copyFile(originalPath, stagingPath);
