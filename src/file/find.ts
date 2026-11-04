@@ -1,4 +1,4 @@
-import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
+import { pathRepair } from "@wxn0brp/db-core/base/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { findObj } from "@wxn0brp/db-core/utils/process";
 import { FileCpuOpts } from "../types";

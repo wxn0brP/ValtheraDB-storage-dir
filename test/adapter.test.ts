@@ -1,26 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdir, rm } from "fs/promises";
 import { join } from "path";
-import { FileActions } from "../src/action";
+import { FileAdapter } from "../src/adapter";
 import { vFileCpu } from "../src/file";
 
-const TEST_DIR = join(process.cwd(), "test_temp_actions");
+const TEST_DIR = join(process.cwd(), "test_temp_adapters");
 
-describe("action.ts", () => {
-	let actions: FileActions;
+describe("adapter.ts", () => {
+	let adapter: FileAdapter;
 
 	beforeEach(async () => {
 		await mkdir(TEST_DIR, {
 			recursive: true,
 		});
-		actions = new FileActions(
+		adapter = new FileAdapter(
 			TEST_DIR,
 			{
 				maxFileSize: 2 * 1024 * 1024,
 			},
 			vFileCpu,
 		);
-		await actions.init();
+		await adapter.init();
 	});
 
 	afterEach(async () => {
@@ -33,61 +33,61 @@ describe("action.ts", () => {
 	describe("init", () => {
 		it("1. should create folder if it doesn't exist", async () => {
 			const newDir = join(TEST_DIR, "new_folder");
-			const newActions = new FileActions(newDir, {}, vFileCpu);
-			await newActions.init();
-			expect(await newActions.issetCollection("")).toBe(true);
+			const newAdapter = new FileAdapter(newDir, {}, vFileCpu);
+			await newAdapter.init();
+			expect(await newAdapter.issetCollection("")).toBe(true);
 		});
 
 		it("2. should not fail if folder already exists", async () => {
-			await actions.init();
-			expect(await actions.init()).toBeUndefined();
+			await adapter.init();
+			expect(await adapter.init()).toBeUndefined();
 		});
 	});
 
 	describe("getCollections", () => {
 		it("1. should return empty array for empty folder", async () => {
-			const collections = await actions.getCollections();
+			const collections = await adapter.getCollections();
 			expect(collections).toEqual([]);
 		});
 
 		it("2. should return collection names", async () => {
-			await actions.ensureCollection("users");
-			await actions.ensureCollection("posts");
+			await adapter.ensureCollection("users");
+			await adapter.ensureCollection("posts");
 
-			const collections = await actions.getCollections();
+			const collections = await adapter.getCollections();
 			expect(collections).toContain("users");
 			expect(collections).toContain("posts");
 		});
 
 		it("3. should handle nested collections", async () => {
-			await actions.ensureCollection("blog/posts");
-			const collections = await actions.getCollections();
+			await adapter.ensureCollection("blog/posts");
+			const collections = await adapter.getCollections();
 			expect(collections).toContain("blog/posts");
 		});
 	});
 
 	describe("ensureCollection", () => {
 		it("1. should create collection if it doesn't exist", async () => {
-			const result = await actions.ensureCollection("test_collection");
+			const result = await adapter.ensureCollection("test_collection");
 			expect(result).toBe(true);
-			expect(await actions.issetCollection("test_collection")).toBe(true);
+			expect(await adapter.issetCollection("test_collection")).toBe(true);
 		});
 
 		it("2. should do nothing if collection already exists", async () => {
-			await actions.ensureCollection("test_collection");
-			const result = await actions.ensureCollection("test_collection");
+			await adapter.ensureCollection("test_collection");
+			const result = await adapter.ensureCollection("test_collection");
 			expect(result).toBe(false);
 		});
 	});
 
 	describe("issetCollection", () => {
 		it("1. should return true for existing collection", async () => {
-			await actions.ensureCollection("test_collection");
-			expect(await actions.issetCollection("test_collection")).toBe(true);
+			await adapter.ensureCollection("test_collection");
+			expect(await adapter.issetCollection("test_collection")).toBe(true);
 		});
 
 		it("2. should return false for non-existing collection", async () => {
-			expect(await actions.issetCollection("non_existing")).toBe(false);
+			expect(await adapter.issetCollection("non_existing")).toBe(false);
 		});
 	});
 
@@ -97,27 +97,27 @@ describe("action.ts", () => {
 				name: "test",
 				value: 123,
 			};
-			const result = await actions.add({
+			const result = await adapter.add({
 				collection: "test",
 				data,
 				control: {},
 			});
 
 			expect(result).toEqual(data);
-			expect(await actions.issetCollection("test")).toBe(true);
+			expect(await adapter.issetCollection("test")).toBe(true);
 		});
 
 		it("2. should add id to data if not present", async () => {
 			const data = {
 				name: "test",
 			};
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data,
 				control: {},
 			});
 
-			const found = await actions.findOne({
+			const found = await adapter.findOne({
 				collection: "test",
 				search: {
 					name: "test",
@@ -135,13 +135,13 @@ describe("action.ts", () => {
 				id: "custom_id",
 				name: "test",
 			};
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data,
 				control: {},
 			});
 
-			const found = await actions.findOne({
+			const found = await adapter.findOne({
 				collection: "test",
 				search: {
 					id: "custom_id",
@@ -156,7 +156,7 @@ describe("action.ts", () => {
 
 	describe("find", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -164,7 +164,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -172,7 +172,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "3",
@@ -183,7 +183,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should find all matching entries", async () => {
-			const results = await actions.find({
+			const results = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -193,7 +193,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should find entries matching search criteria", async () => {
-			const results = await actions.find({
+			const results = await adapter.find({
 				collection: "test",
 				search: {
 					name: "first",
@@ -206,7 +206,7 @@ describe("action.ts", () => {
 		});
 
 		it("3. should return empty array for no matches", async () => {
-			const results = await actions.find({
+			const results = await adapter.find({
 				collection: "test",
 				search: {
 					name: "nonexistent",
@@ -218,7 +218,7 @@ describe("action.ts", () => {
 		});
 
 		it("4. should handle function-based search", async () => {
-			const results = await actions.find({
+			const results = await adapter.find({
 				collection: "test",
 				search: (item: any) => item.id === "2",
 				context: {},
@@ -231,7 +231,7 @@ describe("action.ts", () => {
 
 	describe("findOne", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -239,7 +239,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -250,7 +250,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should return first matching entry", async () => {
-			const result = await actions.findOne({
+			const result = await adapter.findOne({
 				collection: "test",
 				search: {
 					name: "first",
@@ -263,7 +263,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should return null for no matches", async () => {
-			const result = await actions.findOne({
+			const result = await adapter.findOne({
 				collection: "test",
 				search: {
 					name: "nonexistent",
@@ -275,7 +275,7 @@ describe("action.ts", () => {
 		});
 
 		it("3. should return null for empty collection", async () => {
-			const result = await actions.findOne({
+			const result = await adapter.findOne({
 				collection: "empty",
 				search: {},
 				context: {},
@@ -287,7 +287,7 @@ describe("action.ts", () => {
 
 	describe("update", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -296,7 +296,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -308,7 +308,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should update all matching entries", async () => {
-			const results = await actions.update({
+			const results = await adapter.update({
 				collection: "test",
 				search: {},
 				updater: (item: any) => ({
@@ -321,7 +321,7 @@ describe("action.ts", () => {
 
 			expect(results.length).toBe(2);
 
-			const all = await actions.find({
+			const all = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -331,7 +331,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should update entries matching search criteria", async () => {
-			const results = await actions.update({
+			const results = await adapter.update({
 				collection: "test",
 				search: {
 					id: "1",
@@ -349,7 +349,7 @@ describe("action.ts", () => {
 		});
 
 		it("3. should support object updater", async () => {
-			await actions.update({
+			await adapter.update({
 				collection: "test",
 				search: {
 					id: "1",
@@ -361,7 +361,7 @@ describe("action.ts", () => {
 				control: {},
 			});
 
-			const result = await actions.findOne({
+			const result = await adapter.findOne({
 				collection: "test",
 				search: {
 					id: "1",
@@ -376,7 +376,7 @@ describe("action.ts", () => {
 
 	describe("updateOne", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -384,7 +384,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -395,7 +395,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should update only first matching entry", async () => {
-			const result = await actions.updateOne({
+			const result = await adapter.updateOne({
 				collection: "test",
 				search: {},
 				updater: (item: any) => ({
@@ -408,7 +408,7 @@ describe("action.ts", () => {
 
 			expect(result).toBeDefined();
 
-			const all = await actions.find({
+			const all = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -418,7 +418,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should return updated entry", async () => {
-			const result = await actions.updateOne({
+			const result = await adapter.updateOne({
 				collection: "test",
 				search: {
 					id: "1",
@@ -436,7 +436,7 @@ describe("action.ts", () => {
 
 	describe("remove", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -444,7 +444,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -452,7 +452,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "3",
@@ -463,7 +463,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should remove all matching entries", async () => {
-			const removed = await actions.remove({
+			const removed = await adapter.remove({
 				collection: "test",
 				search: {},
 				context: {},
@@ -472,7 +472,7 @@ describe("action.ts", () => {
 
 			expect(removed.length).toBe(3);
 
-			const remaining = await actions.find({
+			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -482,7 +482,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should remove entries matching search criteria", async () => {
-			const removed = await actions.remove({
+			const removed = await adapter.remove({
 				collection: "test",
 				search: {
 					id: "1",
@@ -494,7 +494,7 @@ describe("action.ts", () => {
 			expect(removed.length).toBe(1);
 			expect(removed[0].id).toBe("1");
 
-			const remaining = await actions.find({
+			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -506,7 +506,7 @@ describe("action.ts", () => {
 
 	describe("removeOne", () => {
 		beforeEach(async () => {
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -514,7 +514,7 @@ describe("action.ts", () => {
 				},
 				control: {},
 			});
-			await actions.add({
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "2",
@@ -525,7 +525,7 @@ describe("action.ts", () => {
 		});
 
 		it("1. should remove only first matching entry", async () => {
-			const removed = await actions.removeOne({
+			const removed = await adapter.removeOne({
 				collection: "test",
 				search: {},
 				context: {},
@@ -534,7 +534,7 @@ describe("action.ts", () => {
 
 			expect(removed).toBeDefined();
 
-			const remaining = await actions.find({
+			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
 				context: {},
@@ -544,7 +544,7 @@ describe("action.ts", () => {
 		});
 
 		it("2. should return removed entry", async () => {
-			const removed = await actions.removeOne({
+			const removed = await adapter.removeOne({
 				collection: "test",
 				search: {
 					id: "1",
@@ -559,8 +559,8 @@ describe("action.ts", () => {
 
 	describe("removeCollection", () => {
 		beforeEach(async () => {
-			await actions.ensureCollection("test");
-			await actions.add({
+			await adapter.ensureCollection("test");
+			await adapter.add({
 				collection: "test",
 				data: {
 					id: "1",
@@ -570,14 +570,14 @@ describe("action.ts", () => {
 		});
 
 		it("1. should remove collection", async () => {
-			const result = await actions.removeCollection("test");
+			const result = await adapter.removeCollection("test");
 			expect(result).toBe(true);
-			expect(await actions.issetCollection("test")).toBe(false);
+			expect(await adapter.issetCollection("test")).toBe(false);
 		});
 
 		it("2. should remove all data in collection", async () => {
-			await actions.removeCollection("test");
-			const found = await actions.findOne({
+			await adapter.removeCollection("test");
+			const found = await adapter.findOne({
 				collection: "test",
 				search: {},
 				context: {},

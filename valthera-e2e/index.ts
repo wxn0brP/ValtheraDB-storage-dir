@@ -4,10 +4,10 @@ const TEST_DIR = "/tmp/valthera-e2e-dir-test";
 
 export default async () => {
 	await Bun.$`rm -rf ${TEST_DIR}`.quiet();
-	const actions = createFileAdapter(TEST_DIR, {
+	const adapter = createFileAdapter(TEST_DIR, {
 		format: "json5:x",
 	});
-	await actions.init();
-	actions._inited = true;
-	return actions;
+	await adapter.init();
+	adapter._inited = true;
+	return adapter;
 };

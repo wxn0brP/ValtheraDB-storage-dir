@@ -1,4 +1,4 @@
-import { pathRepair } from "@wxn0brp/db-core/customFileCpu";
+import { pathRepair } from "@wxn0brp/db-core/base/customFileCpu";
 import { VQueryT } from "@wxn0brp/db-core/types/query";
 import { matchObj, updateObj } from "@wxn0brp/db-core/utils/process";
 import { createWriteStream, promises } from "fs";

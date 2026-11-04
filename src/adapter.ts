@@ -1,4 +1,5 @@
-import { ActionsBase } from "@wxn0brp/db-core/base/actions";
+import { AdapterBase } from "@wxn0brp/db-core/base/adapter";
+import { pathRepair } from "@wxn0brp/db-core/base/customFileCpu";
 import {
 	AdapterInitError,
 	ErrorCodes,
@@ -10,17 +11,17 @@ import { Data } from "@wxn0brp/db-core/types/data";
 import { FileCpu } from "@wxn0brp/db-core/types/fileCpu";
 import { VQuery, VQueryT } from "@wxn0brp/db-core/types/query";
 import { TransactionHandle } from "@wxn0brp/db-core/types/transaction";
-import { findUtil } from "@wxn0brp/db-core/utils/action";
+import { findUtil } from "@wxn0brp/db-core/utils/findUtil";
 import { promises } from "fs";
 import { join, resolve, sep } from "path";
-import { FileActionsUtils } from "./action.utils";
+import { FileAdapterUtils } from "./adapter.utils";
 import { extendJson, format } from "./format";
 import { DirJournal } from "./journal";
 import { DbDirOpts, FileCpuOpts, Format } from "./types";
 import { exists, cleanupTmpFiles } from "./utils";
 import { version } from "./version";
 
-export class FileActions extends ActionsBase {
+export class FileAdapter extends AdapterBase {
 	folder: string;
 	options: DbDirOpts;
 	_inited = false;
@@ -36,7 +37,7 @@ export class FileActions extends ActionsBase {
 	};
 
 	/**
-	 * Creates a new instance of FileActions.
+	 * Creates a new instance of FileAdapter.
 	 * @param folder - The folder where database files are stored.
 	 * @param options - The options object.
 	 * @param fileCpu - The file cpu instance
@@ -46,7 +47,7 @@ export class FileActions extends ActionsBase {
 		folder: string,
 		options: DbDirOpts,
 		public fileCpu: FileCpu,
-		public utils = new FileActionsUtils(),
+		public utils = new FileAdapterUtils(),
 	) {
 		super();
 		this.folder = folder;
@@ -101,7 +102,7 @@ export class FileActions extends ActionsBase {
 	}
 
 	_getCollectionPath(collection: string) {
-		return this.folder + "/" + collection + "/";
+		return this.folder + "/" + pathRepair(collection) + "/";
 	}
 
 	_ensureQueryFormat(query: VQuery) {
@@ -362,14 +363,17 @@ export class FileActions extends ActionsBase {
 	 * Removes a database collection from the file system.
 	 */
 	async removeCollection(collection: string) {
-		await promises.rm(join(this.folder, collection), {
+		await promises.rm(this._getCollectionPath(collection), {
 			recursive: true,
 			force: true,
 		});
 		return true;
 	}
 
-	async beginTransaction(id: Id): Promise<TransactionHandle> {
+	async beginTransaction(
+		id: Id,
+		_collections: string[],
+	): Promise<TransactionHandle> {
 		if (this.activeTx)
 			throw new TransactionError("transaction already active", {
 				code: ErrorCodes.TRANSACTION_FAILED,

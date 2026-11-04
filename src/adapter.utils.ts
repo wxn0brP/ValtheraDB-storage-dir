@@ -6,7 +6,7 @@ import { join } from "path";
 import { FileCpuOpts } from "./types";
 import { exists } from "./utils";
 
-export class FileActionsUtils {
+export class FileAdapterUtils {
 	async getLastFile(
 		path: string,
 		maxFileSize: number,

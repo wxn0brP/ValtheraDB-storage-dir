@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
-import { FileActionsUtils } from "../src/action.utils";
+import { FileAdapterUtils } from "../src/adapter.utils";
 
-const TEST_DIR = join(process.cwd(), "test_temp_action_utils");
+const TEST_DIR = join(process.cwd(), "test_temp_adapter_utils");
 
-describe("action.utils.ts", () => {
-	let utils: FileActionsUtils;
+describe("adapter.utils.ts", () => {
+	let utils: FileAdapterUtils;
 
 	beforeEach(async () => {
-		utils = new FileActionsUtils();
+		utils = new FileAdapterUtils();
 		await mkdir(TEST_DIR, {
 			recursive: true,
 		});

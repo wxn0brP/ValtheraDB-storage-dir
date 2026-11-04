@@ -36,9 +36,9 @@ npm install json5 yaml
 ## Usage
 
 ```typescript
-import { createFileActions } from "@wxn0brp/db-storage-dir";
+import { createFileAdapter } from "@wxn0brp/db-storage-dir";
 
-const actions = createFileActions("dir", {
+const adapter = createFileAdapter("dir", {
     format: "json5:x",
 })
 ```
