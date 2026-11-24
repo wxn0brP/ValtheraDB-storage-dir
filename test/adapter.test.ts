@@ -122,7 +122,6 @@ describe("adapter.ts", () => {
 				search: {
 					name: "test",
 				},
-				context: {},
 				control: {},
 			});
 
@@ -146,7 +145,6 @@ describe("adapter.ts", () => {
 				search: {
 					id: "custom_id",
 				},
-				context: {},
 				control: {},
 			});
 
@@ -186,7 +184,6 @@ describe("adapter.ts", () => {
 			const results = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(results.length).toBe(3);
@@ -198,7 +195,6 @@ describe("adapter.ts", () => {
 				search: {
 					name: "first",
 				},
-				context: {},
 				control: {},
 			});
 			expect(results.length).toBe(1);
@@ -211,21 +207,9 @@ describe("adapter.ts", () => {
 				search: {
 					name: "nonexistent",
 				},
-				context: {},
 				control: {},
 			});
 			expect(results).toEqual([]);
-		});
-
-		it("4. should handle function-based search", async () => {
-			const results = await adapter.find({
-				collection: "test",
-				search: (item: any) => item.id === "2",
-				context: {},
-				control: {},
-			});
-			expect(results.length).toBe(1);
-			expect(results[0].id).toBe("2");
 		});
 	});
 
@@ -255,7 +239,6 @@ describe("adapter.ts", () => {
 				search: {
 					name: "first",
 				},
-				context: {},
 				control: {},
 			});
 			expect(result).toBeTruthy();
@@ -268,7 +251,6 @@ describe("adapter.ts", () => {
 				search: {
 					name: "nonexistent",
 				},
-				context: {},
 				control: {},
 			});
 			expect(result).toBeNull();
@@ -278,7 +260,6 @@ describe("adapter.ts", () => {
 			const result = await adapter.findOne({
 				collection: "empty",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(result).toBeNull();
@@ -311,11 +292,9 @@ describe("adapter.ts", () => {
 			const results = await adapter.update({
 				collection: "test",
 				search: {},
-				updater: (item: any) => ({
-					...item,
+				updater: {
 					updated: true,
-				}),
-				context: {},
+				},
 				control: {},
 			});
 
@@ -324,7 +303,6 @@ describe("adapter.ts", () => {
 			const all = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(all.every((item: any) => item.updated === true)).toBe(true);
@@ -336,11 +314,9 @@ describe("adapter.ts", () => {
 				search: {
 					id: "1",
 				},
-				updater: (item: any) => ({
-					...item,
+				updater: {
 					value: 999,
-				}),
-				context: {},
+				},
 				control: {},
 			});
 
@@ -357,7 +333,6 @@ describe("adapter.ts", () => {
 				updater: {
 					value: 500,
 				},
-				context: {},
 				control: {},
 			});
 
@@ -366,7 +341,6 @@ describe("adapter.ts", () => {
 				search: {
 					id: "1",
 				},
-				context: {},
 				control: {},
 			});
 
@@ -398,11 +372,9 @@ describe("adapter.ts", () => {
 			const result = await adapter.updateOne({
 				collection: "test",
 				search: {},
-				updater: (item: any) => ({
-					...item,
+				updater: {
 					updated: true,
-				}),
-				context: {},
+				},
 				control: {},
 			});
 
@@ -411,7 +383,6 @@ describe("adapter.ts", () => {
 			const all = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(all.filter((item: any) => item.updated === true).length).toBe(1);
@@ -426,7 +397,6 @@ describe("adapter.ts", () => {
 				updater: {
 					value: 999,
 				},
-				context: {},
 				control: {},
 			});
 
@@ -466,7 +436,6 @@ describe("adapter.ts", () => {
 			const removed = await adapter.remove({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 
@@ -475,7 +444,6 @@ describe("adapter.ts", () => {
 			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(remaining.length).toBe(0);
@@ -487,7 +455,6 @@ describe("adapter.ts", () => {
 				search: {
 					id: "1",
 				},
-				context: {},
 				control: {},
 			});
 
@@ -497,7 +464,6 @@ describe("adapter.ts", () => {
 			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(remaining.length).toBe(2);
@@ -528,7 +494,6 @@ describe("adapter.ts", () => {
 			const removed = await adapter.removeOne({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 
@@ -537,7 +502,6 @@ describe("adapter.ts", () => {
 			const remaining = await adapter.find({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(remaining.length).toBe(1);
@@ -549,7 +513,6 @@ describe("adapter.ts", () => {
 				search: {
 					id: "1",
 				},
-				context: {},
 				control: {},
 			});
 
@@ -580,7 +543,6 @@ describe("adapter.ts", () => {
 			const found = await adapter.findOne({
 				collection: "test",
 				search: {},
-				context: {},
 				control: {},
 			});
 			expect(found).toBeNull();

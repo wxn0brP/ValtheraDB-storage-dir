@@ -106,7 +106,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -123,7 +122,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -133,23 +131,7 @@ describe("file CPU operations", () => {
 			expect(results[0].name).toBe("first");
 		});
 
-		it("3. should find entries matching function search", async () => {
-			const results = await vFileCpu.find(
-				TEST_FILE,
-				{
-					collection: "test",
-					search: (item: any) => item.id === "2",
-					context: {},
-					control: getControl(),
-				},
-				opts,
-			);
-
-			expect(results.length).toBe(1);
-			expect(results[0].id).toBe("2");
-		});
-
-		it("4. should return empty array for no matches", async () => {
+		it("3. should return empty array for no matches", async () => {
 			const results = await vFileCpu.find(
 				TEST_FILE,
 				{
@@ -157,7 +139,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "nonexistent",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -166,14 +147,13 @@ describe("file CPU operations", () => {
 			expect(results).toEqual([]);
 		});
 
-		it("5. should create file if it doesn't exist", async () => {
+		it("4. should create file if it doesn't exist", async () => {
 			const nonExistentFile = join(TEST_DIR, "nonexistent.db");
 			const results = await vFileCpu.find(
 				nonExistentFile,
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -182,7 +162,7 @@ describe("file CPU operations", () => {
 			expect(results).toEqual([]);
 		});
 
-		it("6. should handle empty lines in file", async () => {
+		it("5. should handle empty lines in file", async () => {
 			await writeFile(TEST_FILE, '{"id":"1"}\n\n{"id":"2"}\n');
 
 			const results = await vFileCpu.find(
@@ -190,7 +170,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -216,7 +195,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -234,7 +212,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "nonexistent",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -252,7 +229,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -274,7 +250,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -298,11 +273,9 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					updater: (item: any) => ({
-						...item,
+					updater: {
 						updated: true,
-					}),
-					context: {},
+					},
 					control: getControl(),
 				},
 				false,
@@ -316,7 +289,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -332,11 +304,9 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					updater: (item: any) => ({
-						...item,
+					updater: {
 						value: 999,
-					}),
-					context: {},
+					},
 					control: getControl(),
 				},
 				false,
@@ -358,7 +328,6 @@ describe("file CPU operations", () => {
 					updater: {
 						value: 500,
 					},
-					context: {},
 					control: getControl(),
 				},
 				false,
@@ -372,7 +341,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -387,11 +355,9 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					updater: (item: any) => ({
-						...item,
+					updater: {
 						updated: true,
-					}),
-					context: {},
+					},
 					control: getControl(),
 				},
 				true,
@@ -403,7 +369,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -422,11 +387,9 @@ describe("file CPU operations", () => {
 					search: {
 						id: "nonexistent",
 					},
-					updater: (item: any) => ({
-						...item,
+					updater: {
 						value: 999,
-					}),
-					context: {},
+					},
 					control: getControl(),
 				},
 				false,
@@ -451,7 +414,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				false,
@@ -465,7 +427,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -481,7 +442,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "1",
 					},
-					context: {},
 					control: getControl(),
 				},
 				false,
@@ -496,7 +456,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -510,7 +469,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				true,
@@ -522,7 +480,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -538,7 +495,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "nonexistent",
 					},
-					context: {},
 					control: getControl(),
 				},
 				false,
@@ -552,7 +508,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,
@@ -568,7 +523,6 @@ describe("file CPU operations", () => {
 					search: {
 						id: "2",
 					},
-					context: {},
 					control: getControl(),
 				},
 				false,
@@ -580,7 +534,6 @@ describe("file CPU operations", () => {
 				{
 					collection: "test",
 					search: {},
-					context: {},
 					control: getControl(),
 				},
 				opts,

@@ -26,7 +26,6 @@ describe("adapter.utils.ts", () => {
 		it("1. should return empty array for empty directory", async () => {
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const files = await utils.getSortedFiles(TEST_DIR, query);
 			expect(files).toEqual([]);
@@ -39,7 +38,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const files = await utils.getSortedFiles(TEST_DIR, query);
 			expect(files).toEqual([
@@ -56,7 +54,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const files = await utils.getSortedFiles(TEST_DIR, query);
 			expect(files).toEqual([
@@ -70,7 +67,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const files = await utils.getSortedFiles(TEST_DIR, query);
 			expect(files).toEqual([
@@ -85,7 +81,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const files = await utils.getSortedFiles(TEST_DIR, query);
 			expect(files).toEqual([
@@ -99,7 +94,6 @@ describe("adapter.utils.ts", () => {
 			await writeFile(join(TEST_DIR, "1.db"), "content1");
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			await utils.getSortedFiles(TEST_DIR, query);
 			expect(query.control.dir.sortedFiles).toEqual([
@@ -115,7 +109,6 @@ describe("adapter.utils.ts", () => {
 			const emptyDir = join(TEST_DIR, "empty");
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const file = await utils.getLastFile(emptyDir, maxFileSize, query);
 			expect(file).toBe("1.db");
@@ -130,7 +123,6 @@ describe("adapter.utils.ts", () => {
 			await writeFile(join(TEST_DIR, "1.db"), "small content");
 			const query = {
 				control: {},
-				context: {},
 			} as any;
 			const file = await utils.getLastFile(TEST_DIR, maxFileSize, query);
 			expect(file).toBe("1.db");
@@ -190,7 +182,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 				search: {},
 			} as any;
 			await utils.operationUpdater(TEST_DIR, mockWorker, false, query, {
@@ -218,7 +209,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 				search: {},
 			} as any;
 			await utils.operationUpdater(TEST_DIR, mockWorker, true, query, {
@@ -243,7 +233,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 				search: {},
 			} as any;
 			await utils.operationUpdater(TEST_DIR, mockWorker, false, query, {
@@ -266,7 +255,6 @@ describe("adapter.utils.ts", () => {
 
 			const query = {
 				control: {},
-				context: {},
 				search: {},
 			} as any;
 			const result = await utils.operationUpdater(
